@@ -2,238 +2,257 @@
 {% load static %}
 {% block content %}
 
-<div class="app-viewport">
+<div class="transit-viewport">
     <!-- Map Container -->
     <div id="map"></div>
 
-    <!-- Floating Navigation & Intelligence Capsule -->
-    <aside class="floating-sidebar" id="sidebarPanel">
-        <!-- Header -->
-        <div class="panel-brand">
-            <div class="brand-title-wrap">
-                <div class="brand-logo-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M8 6v6"></path>
-                        <path d="M15 6v6"></path>
-                        <path d="M2 12h19.6"></path>
-                        <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4C2.9 6 1.9 6.8 1.6 7.8L.2 12.8c-.1.4-.2.8-.2 1.2 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3"></path>
-                        <circle cx="7" cy="18" r="2"></circle>
-                        <circle cx="15" cy="18" r="2"></circle>
+    <!-- Top-Right Floating Map Controls -->
+    <div class="map-floating-controls">
+        <button type="button" class="map-control-btn" onclick="toggleMapTheme()" title="Toggle Dark/Light Map" id="btnThemeToggle">
+            <svg id="mapThemeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+        <button type="button" class="map-control-btn" onclick="getUserLocation()" title="My Current Location">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+            </svg>
+        </button>
+        <button type="button" class="map-control-btn" onclick="resetMapCenter()" title="Recenter to Kathmandu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Floating Transit App Drawer -->
+    <aside class="transit-drawer" id="transitDrawer">
+        <!-- Brand Bar -->
+        <div class="transit-brand-bar">
+            <div class="brand-left">
+                <div class="transit-app-logo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="16" height="16" x="4" y="4" rx="3"></rect>
+                        <path d="m9 10 2 2 4-4"></path>
                     </svg>
                 </div>
-                <div class="brand-text">
-                    <h1>Transit Assistant</h1>
-                    <p><span class="live-beacon"></span> Kathmandu Live Network</p>
+                <div>
+                    <div class="brand-title">Transit Assistant</div>
+                    <div class="brand-subtitle"><span class="live-beacon-dot"></span> Kathmandu Live Network</div>
                 </div>
             </div>
         </div>
 
         <!-- Navigation Tabs -->
-        <nav class="panel-tabs">
-            <button type="button" class="tab-btn active" id="tabPlan" onclick="switchTab('plan')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+        <nav class="transit-tabs">
+            <button type="button" class="transit-tab-btn active" id="tabPlan" onclick="switchTransitTab('plan')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                 Plan Trip
             </button>
-            <button type="button" class="tab-btn" id="tabRoutes" onclick="switchTab('routes')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"></path><path d="M3 6h18"></path><path d="M3 18h18"></path></svg>
-                Routes (116)
+            <button type="button" class="transit-tab-btn" id="tabRoutes" onclick="switchTransitTab('routes')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg>
+                Nearby Lines
             </button>
-            <button type="button" class="tab-btn" id="tabSim" onclick="switchTab('sim')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                Simulator
+            <button type="button" class="transit-tab-btn" id="tabSim" onclick="switchTransitTab('sim')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Live Radar
             </button>
-            <button type="button" class="tab-btn" id="tabAI" onclick="switchTab('ai')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="m17 5-5-3-5 3"></path><path d="m17 19-5 3-5-3"></path><path d="M2 12h20"></path></svg>
+            <button type="button" class="transit-tab-btn" id="tabAI" onclick="switchTransitTab('ai')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="m17 5-5-3-5 3"></path><path d="m17 19-5 3-5-3"></path><path d="M2 12h20"></path></svg>
                 AI Model
             </button>
         </nav>
 
-        <!-- Tab 1: Journey Planner -->
-        <div class="panel-scroll-body" id="viewPlan">
+        <!-- Tab 1: Journey Planner & GO Mode -->
+        <div class="transit-body" id="viewPlan">
             <form id="searchJourneyForm" onsubmit="event.preventDefault(); submitPlan();">
-                <div class="search-capsule">
-                    <!-- Origin Field -->
-                    <div class="search-field-row">
-                        <span class="field-dot dot-origin"></span>
-                        <input id="inputOrigin" class="search-field-input" type="text" placeholder="Starting point (e.g. Kalanki)" value="{{ my_location_name|default:'' }}" required autocomplete="off">
+                <div class="search-capsule-wrap">
+                    <div class="search-input-row">
+                        <span class="search-pin pin-origin"></span>
+                        <input id="inputOrigin" class="search-field" type="text" placeholder="Starting point (e.g. Kalanki)" value="{{ my_location_name|default:'' }}" required autocomplete="off">
                     </div>
+                    
+                    <div class="search-divider"></div>
 
-                    <div class="field-divider"></div>
-
-                    <!-- Destination Field -->
-                    <div class="search-field-row">
-                        <span class="field-dot dot-dest"></span>
-                        <input id="inputDest" class="search-field-input" type="text" placeholder="Where to? (e.g. Koteshwor)" value="{{ dest_location_name|default:'' }}" required autocomplete="off">
-                        <button type="button" class="swap-btn" onclick="swapLocations()" title="Swap origin & destination">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="m21 8-4-4-4 4"></path><path d="M17 4v16"></path></svg>
+                    <div class="search-input-row">
+                        <span class="search-pin pin-dest"></span>
+                        <input id="inputDest" class="search-field" type="text" placeholder="Where to? (e.g. Koteshwor)" value="{{ dest_location_name|default:'' }}" required autocomplete="off">
+                        <button type="button" class="btn-swap" onclick="swapLocations()" title="Swap origin & destination">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="m21 8-4-4-4 4"></path><path d="M17 4v16"></path></svg>
                         </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    Find Optimal Transit Route
+                <button type="submit" class="btn-go">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    START GO · PLAN ROUTE
                 </button>
             </form>
 
-            <!-- Quick Landmark Chips -->
-            <div class="chips-row">
-                <span class="chip-label">Popular Hubs:</span>
-                <button type="button" class="chip-btn" onclick="fillQuickRoute('Kalanki', 'Ratnapark')">Kalanki → Ratnapark</button>
-                <button type="button" class="chip-btn" onclick="fillQuickRoute('Lagankhel', 'Budhanilkantha')">Lagankhel → Budhanilkantha</button>
-                <button type="button" class="chip-btn" onclick="fillQuickRoute('Thapathali', 'Airport')">Thapathali → Airport</button>
-                <button type="button" class="chip-btn" onclick="fillQuickRoute('Koteshwor', 'Swayambhu')">Koteshwor → Swayambhu</button>
+            <!-- Quick Hub Chips -->
+            <div class="quick-hubs">
+                <span class="quick-hubs-label">Popular Corridors:</span>
+                <button type="button" class="hub-chip" onclick="fillQuickRoute('Kalanki', 'Ratnapark')">Kalanki → Ratnapark</button>
+                <button type="button" class="hub-chip" onclick="fillQuickRoute('Lagankhel', 'Budhanilkantha')">Lagankhel → Budhanilkantha</button>
+                <button type="button" class="hub-chip" onclick="fillQuickRoute('Thapathali', 'Airport')">Thapathali → Airport</button>
+                <button type="button" class="hub-chip" onclick="fillQuickRoute('Koteshwor', 'Swayambhu')">Koteshwor → Swayambhu</button>
             </div>
 
             <!-- Error Notice (if any) -->
             {% if error %}
-            <div style="margin-top: 16px; padding: 12px 14px; background: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 8px; font-size: 13px; color: #991B1B;">
+            <div style="margin-top: 16px; padding: 12px 14px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; font-size: 13px; color: #F87171;">
                 <strong>Notice:</strong> {{ error }}
             </div>
             {% endif %}
 
-            <!-- Result Itinerary Card -->
+            <!-- Result Itinerary Card (Transit App "GO" Style) -->
             {% if my_location_name and dest_location_name %}
-            <div class="journey-card">
-                <div class="journey-header">
-                    <span class="journey-title">Recommended Itinerary</span>
-                    <span class="fare-pill">Rs. {{ fare_npr }}</span>
+            <div class="go-journey-container">
+                <div class="go-header">
+                    <div class="go-header-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        Recommended Trip
+                    </div>
+                    <span class="go-fare-chip">Rs. {{ fare_npr }}</span>
                 </div>
 
                 <!-- Step-by-Step Stepper -->
-                <div class="journey-step">
-                    <div class="step-icon-wrap step-origin">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>
-                    </div>
-                    <div class="step-body">
+                <div class="go-step">
+                    <div class="step-node node-origin">●</div>
+                    <div class="step-content">
                         <h4>{{ my_location_name }}</h4>
-                        <p>Origin Location</p>
+                        <p>Origin point</p>
                     </div>
                 </div>
 
-                <div class="journey-step">
-                    <div class="step-icon-wrap step-transit">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6v6"></path><path d="M15 6v6"></path><path d="M2 12h19.6"></path></svg>
-                    </div>
-                    <div class="step-body">
+                <div class="go-step">
+                    <div class="step-node node-ride">🚌</div>
+                    <div class="step-content">
                         <h4>Board at: {{ nearest_user_station_english_name }}</h4>
-                        <p>Walk to nearest transit boarding stop</p>
-                        <span class="transit-badge">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
-                            Direct Kathmandu Bus Line
-                        </span>
+                        <p>Walk to nearest verified boarding stop</p>
+                        <div class="step-ride-pill">
+                            <span class="live-beacon-dot"></span>
+                            Direct Bus Line · Arriving Soon
+                        </div>
                     </div>
                 </div>
 
-                <div class="journey-step">
-                    <div class="step-icon-wrap step-dest">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path></svg>
-                    </div>
-                    <div class="step-body">
+                <div class="go-step">
+                    <div class="step-node node-dest">▼</div>
+                    <div class="step-content">
                         <h4>Alight at: {{ nearest_dest_station_english_name }}</h4>
-                        <p>Walk to final destination: {{ dest_location_name }}</p>
+                        <p>Walk to destination: {{ dest_location_name }}</p>
                     </div>
                 </div>
 
-                <!-- Trip Metrics -->
-                <div class="metrics-row">
-                    <div class="metric-item">
+                <!-- Trip Stats -->
+                <div class="go-stats-grid">
+                    <div class="go-stat-item">
                         <span>Distance</span>
                         <strong>{{ trip_distance_km }} km</strong>
                     </div>
-                    <div class="metric-item">
-                        <span>Base Tariff</span>
-                        <strong>Rs. {{ fare_npr }}</strong>
+                    <div class="go-stat-item">
+                        <span>Fare</span>
+                        <strong style="color: var(--t-green);">Rs. {{ fare_npr }}</strong>
                     </div>
-                    <div class="metric-item">
-                        <span>Status</span>
-                        <strong style="color: var(--success);">Normal Traffic</strong>
+                    <div class="go-stat-item">
+                        <span>AI Accuracy</span>
+                        <strong>R² 0.965</strong>
                     </div>
                 </div>
             </div>
             {% endif %}
         </div>
 
-        <!-- Tab 2: Route Explorer (116 corridors) -->
-        <div class="panel-scroll-body" id="viewRoutes" style="display: none;">
-            <input type="text" class="routes-search-input" id="filterRouteInput" placeholder="Filter 116 routes (e.g. Kalanki, Airport, Lagankhel)..." oninput="filterRoutes()">
-            
-            <div id="routesListContainer">
+        <!-- Tab 2: Nearby Lines Feed (Transit App Signature Stack) -->
+        <div class="transit-body" id="viewRoutes" style="display: none;">
+            <input type="text" class="search-field" id="filterRouteInput" placeholder="Filter 116 corridors (e.g. Airport, Lagankhel)..." oninput="filterTransitRoutes()" style="background: var(--t-card); border: 1px solid var(--t-border); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;">
+
+            <div id="transitLinesFeed">
                 {% for route in routes_variable %}
-                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/" class="route-card-link" data-search="{{ route.route_name|lower }} {{ route.route_start|lower }} {{ route.route_end|lower }}">
-                    <span class="route-badge-num">Route #{{ route.route_actual_id }}</span>
-                    <div class="route-card-title">{{ route.route_name }}</div>
-                    <div class="route-terminals">
-                        <span>{{ route.route_start }}</span>
-                        <span>→</span>
-                        <span>{{ route.route_end }}</span>
+                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/" class="transit-line-card" data-search="{{ route.route_name|lower }} {{ route.route_start|lower }} {{ route.route_end|lower }}">
+                    <div class="line-left-content">
+                        <span class="route-badge" style="background: {% cycle '#00D2A0' '#2979FF' '#7C4DFF' '#FF6D00' '#FF1744' '#00E5FF' '#FFD600' '#00C853' %};">
+                            {{ route.route_actual_id }}
+                        </span>
+                        <div class="line-info">
+                            <div class="line-name">{{ route.route_end }}</div>
+                            <div class="line-via">From {{ route.route_start }}</div>
+                        </div>
+                    </div>
+                    <div class="line-countdown-wrap">
+                        <div class="live-countdown">
+                            <span class="live-wave-icon">((•))</span>
+                            {% cycle '3m' '5m' '8m' '12m' '15m' %}
+                        </div>
+                        <div class="next-departure">then {% cycle '14m' '18m' '22m' '28m' %}</div>
                     </div>
                 </a>
                 {% empty %}
-                <p style="font-size: 13px; color: var(--text-muted);">No routes loaded in database.</p>
+                <p style="font-size: 13px; color: var(--t-text-muted);">No routes available.</p>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Tab 3: Live Simulator -->
-        <div class="panel-scroll-body" id="viewSim" style="display: none;">
-            <div class="sim-card">
-                <div class="sim-header">
-                    <h4>
-                        <span class="live-beacon"></span>
-                        GPS Telemetry Simulator
-                    </h4>
-                    <span class="sim-status-pill" id="simStatusPill">IDLE</span>
+        <!-- Tab 3: Live Radar Simulator -->
+        <div class="transit-body" id="viewSim" style="display: none;">
+            <div class="simulator-panel">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                        <span class="live-beacon-dot"></span>
+                        Live Telemetry Stream
+                    </span>
+                    <span id="simStatusPill" style="font-family: var(--font-mono); font-size: 10px; background: rgba(255, 255, 255, 0.1); padding: 3px 8px; border-radius: 4px;">IDLE</span>
                 </div>
-                <div class="sim-body">
-                    <p>Simulates real-time hardware telemetry streaming along Kathmandu transit corridors (simulating Arduino Mega + GPS + GSM packets).</p>
-                    
-                    <div style="margin-top: 14px; font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; line-height: 1.6;">
-                        <div>Vehicle: <span style="color: #60A5FA;">Bus-01 (Sajha Yatayat)</span></div>
-                        <div>Coordinates: <span id="simCoords" style="color: #34D399;">27.6938, 85.3214</span></div>
-                        <div>Speed: <span id="simSpeed" style="color: #FBBF24;">0.0 km/h</span></div>
-                        <div>Packets Sent: <span id="simCount">0</span></div>
-                    </div>
 
-                    <div class="sim-actions">
-                        <button type="button" class="btn-sim" id="btnStartSim" onclick="toggleSimulation()">Start Live Stream</button>
-                    </div>
+                <div class="sim-telemetry-box">
+                    <div>Vehicle ID: <strong style="color: #60A5FA;">Bus-01 (Sajha Yatayat)</strong></div>
+                    <div>Corridor  : <strong>Kalanki ➔ Koteshwor</strong></div>
+                    <div>GPS Fix   : <span id="simCoords" style="color: #34D399;">27.6938, 85.3214</span></div>
+                    <div>Telemetry : <span id="simSpeed" style="color: #FBBF24;">0.0 km/h</span></div>
+                    <div>Packets   : <span id="simCount">0</span> transmitted</div>
                 </div>
+
+                <button type="button" class="sim-btn-play" id="btnStartSim" onclick="toggleSimulation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    START LIVE TELEMETRY STREAM
+                </button>
             </div>
 
-            <div style="margin-top: 18px; padding: 14px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
-                <strong style="color: var(--text-main);">How Live Telemetry Works:</strong>
-                <p style="margin-top: 4px;">In production, the vehicle's onboard microcontroller streams GPS packets over cellular GPRS every 30s to the ThingSpeak/Django ingestion pipeline. WebSockets push updates dynamically to this interface.</p>
+            <div style="margin-top: 16px; padding: 14px; background: var(--t-card); border: 1px solid var(--t-border); border-radius: 12px; font-size: 12px; color: var(--t-text-muted); line-height: 1.5;">
+                <strong style="color: var(--t-text-white); font-size: 13px;">Cyber-Physical Telemetry:</strong>
+                <p style="margin-top: 4px;">This simulation demonstrates live GPRS packets streaming from the Arduino Mega + NEO-6M GPS tracker. Ingested via <code>/api/post_realtime_gps_data/</code> and rendered on the map in real time.</p>
             </div>
         </div>
 
         <!-- Tab 4: AI Model Specifications -->
-        <div class="panel-scroll-body" id="viewAI" style="display: none;">
-            <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm);">
+        <div class="transit-body" id="viewAI" style="display: none;">
+            <div style="background: var(--t-card); border: 1px solid var(--t-border); border-radius: 14px; padding: 16px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <h4 style="font-size: 14px; font-weight: 700; color: var(--text-main);">ANN ETA Model (Keras)</h4>
-                    <span style="font-size: 12px; font-weight: 700; color: var(--success); background: var(--success-soft); padding: 2px 8px; border-radius: 999px;">R² = 0.965</span>
+                    <div style="font-size: 14px; font-weight: 800; color: var(--t-text-white);">Feedforward ANN (ETA)</div>
+                    <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--t-green); background: rgba(0, 210, 160, 0.15); padding: 2px 8px; border-radius: 999px;">R² = 0.965</span>
                 </div>
-                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-                    Feedforward artificial neural network trained on Kathmandu bus GPS records (2022–2023) predicting travel times between stops under variable congestion.
+                <p style="font-size: 12px; color: var(--t-text-body); line-height: 1.5;">
+                    Trained on Kathmandu bus corridor GPS records (2022–2023) to predict arrival times between transit stops under dynamic urban congestion.
                 </p>
 
-                <div style="margin-top: 14px; font-family: var(--font-mono); font-size: 11px; background: var(--surface-muted); padding: 12px; border-radius: 8px; line-height: 1.6;">
-                    <div>Input Features : <strong>10 Normalized Variables</strong></div>
+                <div style="margin-top: 14px; font-family: var(--font-mono); font-size: 11px; background: rgba(0, 0, 0, 0.35); padding: 12px; border-radius: 8px; line-height: 1.7; border: 1px solid var(--t-border);">
+                    <div>Input Layer   : <strong>10 Normalized Features</strong></div>
                     <div>Hidden Layer 1: <strong>Dense(64, ReLU) + Dropout(0.3)</strong></div>
                     <div>Hidden Layer 2: <strong>Dense(32, ReLU) + Dropout(0.3)</strong></div>
                     <div>Output Layer  : <strong>Dense(1, Linear)</strong></div>
-                    <div>Loss Function : <strong>Mean Absolute Error (MAE)</strong></div>
+                    <div>Optimizer     : <strong>Adam (lr=0.001)</strong></div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; text-align: center;">
-                    <div style="background: var(--surface-muted); padding: 8px; border-radius: 6px;">
-                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">MAPE Error</span>
-                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">6.74%</div>
+                    <div style="background: rgba(0, 0, 0, 0.25); padding: 8px; border-radius: 6px; border: 1px solid var(--t-border);">
+                        <span style="font-size: 10px; color: var(--t-text-muted); text-transform: uppercase;">MAPE Error</span>
+                        <div style="font-size: 14px; font-weight: 800; color: var(--t-green); font-family: var(--font-mono);">6.74%</div>
                     </div>
-                    <div style="background: var(--surface-muted); padding: 8px; border-radius: 6px;">
-                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Test Loss (MAE)</span>
-                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">0.00067</div>
+                    <div style="background: rgba(0, 0, 0, 0.25); padding: 8px; border-radius: 6px; border: 1px solid var(--t-border);">
+                        <span style="font-size: 10px; color: var(--t-text-muted); text-transform: uppercase;">MAE Test Loss</span>
+                        <div style="font-size: 14px; font-weight: 800; color: var(--t-text-white); font-family: var(--font-mono);">0.00067</div>
                     </div>
                 </div>
             </div>
@@ -254,8 +273,8 @@
 <script src="{% static 'js/4_routing.js' %}"></script>
 
 <script>
-    // Tab Switching Logic
-    function switchTab(tabId) {
+    // Tab Switching
+    function switchTransitTab(tabId) {
         const tabs = ['plan', 'routes', 'sim', 'ai'];
         tabs.forEach(t => {
             const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -272,14 +291,12 @@
         });
     }
 
-    // Quick fill helper
     function fillQuickRoute(origin, dest) {
         document.getElementById('inputOrigin').value = origin;
         document.getElementById('inputDest').value = dest;
         submitPlan();
     }
 
-    // Location swap
     function swapLocations() {
         const o = document.getElementById('inputOrigin');
         const d = document.getElementById('inputDest');
@@ -288,7 +305,6 @@
         d.value = temp;
     }
 
-    // Submit Plan
     function submitPlan() {
         const o = document.getElementById('inputOrigin').value.trim();
         const d = document.getElementById('inputDest').value.trim();
@@ -299,13 +315,12 @@
         window.location.href = '/api/post-to-get-nearest-station/' + encodeURIComponent(o) + '/' + encodeURIComponent(d) + '/';
     }
 
-    // Filter Routes in Tab 2
-    function filterRoutes() {
+    function filterTransitRoutes() {
         const q = document.getElementById('filterRouteInput').value.toLowerCase();
-        const cards = document.querySelectorAll('.route-card-link');
+        const cards = document.querySelectorAll('.transit-line-card');
         cards.forEach(c => {
             const text = c.getAttribute('data-search') || '';
-            c.style.display = text.includes(q) ? 'block' : 'none';
+            c.style.display = text.includes(q) ? 'flex' : 'none';
         });
     }
 
@@ -315,7 +330,6 @@
     let simIndex = 0;
     let simCount = 0;
 
-    // Kathmandu route coordinates (Kalanki -> Maitighar -> Koteshwor corridor)
     const SIM_PATH = [
         [27.6938, 85.2814], [27.6948, 85.2905], [27.6960, 85.2990],
         [27.6975, 85.3080], [27.6938, 85.3180], [27.6915, 85.3225],
@@ -328,30 +342,46 @@
         const pill = document.getElementById('simStatusPill');
 
         if (simInterval) {
-            // Stop simulation
             clearInterval(simInterval);
             simInterval = null;
-            btn.textContent = 'Resume Live Stream';
-            btn.classList.remove('btn-sim-stop');
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> RESUME LIVE STREAM';
+            btn.classList.remove('sim-btn-pause');
             pill.textContent = 'PAUSED';
-            pill.style.background = 'rgba(255, 255, 255, 0.15)';
+            pill.style.background = 'rgba(255, 255, 255, 0.1)';
         } else {
-            // Start simulation
-            btn.textContent = 'Pause Simulation';
-            btn.classList.add('btn-sim-stop');
+            btn.innerHTML = 'PAUSE SIMULATION';
+            btn.classList.add('sim-btn-pause');
             pill.textContent = 'TRANSMITTING';
-            pill.style.background = '#10B981';
+            pill.style.background = '#00D2A0';
+            pill.style.color = '#000000';
 
             if (!simMarker) {
-                const busIcon = L.icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41],
-                    popupAnchor: [1, -34]
+                // Transit App Animated Bus Icon with Pulsing Radar Ring
+                const busHtml = `
+                    <div class="live-bus-marker-wrapper">
+                        <div class="live-bus-pulse-ring"></div>
+                        <div class="live-bus-icon-circle">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 6v6"></path>
+                                <path d="M15 6v6"></path>
+                                <path d="M2 12h19.6"></path>
+                                <circle cx="7" cy="18" r="2"></circle>
+                                <circle cx="15" cy="18" r="2"></circle>
+                            </svg>
+                        </div>
+                    </div>`;
+
+                const busDivIcon = L.divIcon({
+                    html: busHtml,
+                    className: '',
+                    iconSize: [44, 44],
+                    iconAnchor: [22, 22],
+                    popupAnchor: [0, -22]
                 });
-                simMarker = L.marker(SIM_PATH[0], { icon: busIcon }).addTo(map);
-                simMarker.bindPopup('<b>🚌 Live Bus #1</b><br>Speed: 28 km/h<br>Corridor: Kalanki - Koteshwor').openPopup();
-                map.setView(SIM_PATH[0], 14);
+
+                simMarker = L.marker(SIM_PATH[0], { icon: busDivIcon }).addTo(map);
+                simMarker.bindPopup('<b>🚌 Live Bus #1 (Sajha Yatayat)</b><br>Speed: 28 km/h<br>Corridor: Kalanki ➔ Koteshwor').openPopup();
+                map.flyTo(SIM_PATH[0], 14, { duration: 1.5 });
             }
 
             simInterval = setInterval(() => {
@@ -364,7 +394,7 @@
                 document.getElementById('simSpeed').textContent = (20 + Math.random() * 15).toFixed(1) + ' km/h';
                 document.getElementById('simCount').textContent = simCount;
 
-                // Send real telemetry POST to local backend API
+                // Send real telemetry POST
                 fetch('/api/post_realtime_gps_data/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

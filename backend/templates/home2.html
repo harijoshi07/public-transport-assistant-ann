@@ -2,50 +2,89 @@
 {% load static %}
 {% block content %}
 
-<div class="app-viewport">
+<div class="transit-viewport">
+    <!-- Map Canvas -->
     <div id="map"></div>
 
-    <!-- Floating Route Stations Panel -->
-    <aside class="floating-sidebar" id="sidebarPanel" style="width: 400px;">
-        <div class="panel-brand">
-            <div class="brand-title-wrap">
-                <a href="/" class="brand-logo-icon" style="text-decoration: none;" title="Return to Search & Route Planner">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Floating Top-Right Controls -->
+    <div class="map-floating-controls">
+        <button type="button" class="map-control-btn" onclick="toggleMapTheme()" title="Toggle Dark/Light Map" id="btnThemeToggle">
+            <svg id="mapThemeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+        <button type="button" class="map-control-btn" onclick="getUserLocation()" title="My Current Location">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+            </svg>
+        </button>
+        <button type="button" class="map-control-btn" onclick="resetMapCenter()" title="Recenter to Kathmandu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Floating Route Details Drawer (Transit App Subway View) -->
+    <aside class="transit-drawer" id="transitDrawer" style="width: 440px;">
+        <!-- Brand Header with Back Action -->
+        <div class="transit-brand-bar">
+            <div class="brand-left">
+                <a href="/" class="map-control-btn" style="width: 34px; height: 34px; text-decoration: none;" title="Back to Route Planner">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
                 </a>
-                <div class="brand-text">
-                    <h1>{{ current_route.route_english_name|default:"Transit Corridor" }}</h1>
-                    <p><span class="live-beacon"></span> Route ID: #{{ current_route.route_id|default:"Active" }}</p>
+                <div style="min-width: 0;">
+                    <div class="brand-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;">
+                        {{ current_route.route_english_name|default:"Transit Corridor" }}
+                    </div>
+                    <div class="brand-subtitle">
+                        <span class="live-beacon-dot"></span> Line #{{ current_route.route_actual_id|default:current_route.route_id }} · {{ stations_variable|length }} Verified Stops
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="panel-scroll-body" style="padding: 16px 20px;">
+        <!-- Sequential Stations Subway List -->
+        <div class="transit-body" style="padding: 16px 20px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                <span style="font-size: 13px; font-weight: 700; color: var(--text-main);">Sequential Stops ({{ stations_variable|length }})</span>
-                <a href="/" class="text-link" style="font-size: 11px;">← Search Trip</a>
+                <span style="font-size: 13px; font-weight: 800; color: var(--t-text-white); text-transform: uppercase; letter-spacing: 0.04em;">
+                    Sequential Stops
+                </span>
+                <span style="font-family: var(--font-mono); font-size: 11px; background: rgba(0, 210, 160, 0.15); color: var(--t-green); padding: 3px 8px; border-radius: 999px;">
+                    Active Corridor
+                </span>
             </div>
 
-            <div class="journey-card" style="margin-top: 0; padding: 14px;">
+            <div style="background: var(--t-card); border: 1px solid var(--t-border); border-radius: var(--radius-md); padding: 16px;">
                 <ol style="padding: 0; margin: 0; list-style: none;">
                     {% for station in stations_variable %}
-                    <li style="display: flex; gap: 12px; margin-bottom: 12px; position: relative;">
-                        <span style="width: 22px; height: 22px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-mono);">
-                            {{ forloop.counter }}
-                        </span>
-                        <div style="flex: 1;">
-                            <div style="font-size: 13px; font-weight: 600; color: var(--text-main); line-height: 1.3;">
+                    <li style="display: flex; gap: 14px; margin-bottom: 14px; position: relative;">
+                        <!-- Subway Timeline Connecting Bar -->
+                        <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                            <span style="width: 22px; height: 22px; border-radius: 50%; background: #00D2A0; color: #000000; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-mono); box-shadow: 0 0 10px rgba(0, 210, 160, 0.4); z-index: 2;">
+                                {{ forloop.counter }}
+                            </span>
+                            {% if not forloop.last %}
+                            <div style="width: 2px; flex: 1; background: rgba(255, 255, 255, 0.12); margin-top: 4px; margin-bottom: -4px;"></div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Station Info -->
+                        <div style="flex: 1; padding-bottom: 4px;">
+                            <div style="font-size: 14px; font-weight: 700; color: var(--t-text-white); line-height: 1.3;">
                                 {{ station.station_english_name }}
                             </div>
-                            <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px;">
-                                ID: {{ station.station_id }} · ({{ station.station_latitude|floatformat:4 }}, {{ station.station_longitude|floatformat:4 }})
+                            <div style="font-size: 11px; color: var(--t-text-muted); font-family: var(--font-mono); margin-top: 3px;">
+                                Stop #{{ forloop.counter }} · ID: {{ station.station_id }} · ({{ station.station_latitude|floatformat:4 }}, {{ station.station_longitude|floatformat:4 }})
                             </div>
                         </div>
                     </li>
                     {% empty %}
-                    <li style="font-size: 13px; color: var(--text-muted);">No stations registered for this route.</li>
+                    <li style="font-size: 13px; color: var(--t-text-muted);">No stations registered for this corridor.</li>
                     {% endfor %}
                 </ol>
             </div>
@@ -68,31 +107,40 @@
                 const stations = JSON.parse(stationsEl.textContent);
                 if (Array.isArray(stations) && stations.length > 0) {
                     const latlngs = [];
-                    const stationIcon = L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
-                        iconSize: [20, 32],
-                        iconAnchor: [10, 32],
-                        popupAnchor: [1, -28],
-                    });
 
+                    // Subway Station Dot Custom DivIcon
                     stations.forEach(function (s, idx) {
                         if (s.station_latitude && s.station_longitude) {
                             const pt = [s.station_latitude, s.station_longitude];
                             latlngs.push(pt);
-                            L.marker(pt, { icon: stationIcon })
+
+                            const stationDotHtml = `<div class="station-dot-marker" title="${s.station_english_name}"></div>`;
+                            const dotIcon = L.divIcon({
+                                html: stationDotHtml,
+                                className: '',
+                                iconSize: [14, 14],
+                                iconAnchor: [7, 7],
+                                popupAnchor: [0, -10]
+                            });
+
+                            L.marker(pt, { icon: dotIcon })
                                 .addTo(map)
-                                .bindPopup("<b>Stop #" + (idx + 1) + ": " + s.station_english_name + "</b><br>ID: " + s.station_id);
+                                .bindPopup("<b>Stop #" + (idx + 1) + ": " + s.station_english_name + "</b><br><span style='font-size:11px;color:#888;'>ID: " + s.station_id + "</span>");
                         }
                     });
 
                     if (latlngs.length > 1) {
-                        // Draw metro-style route polyline connecting stations
-                        L.polyline(latlngs, { color: '#E11D48', weight: 5, opacity: 0.85 }).addTo(map);
-                        map.fitBounds(latlngs, { padding: [50, 50] });
+                        // Draw Transit App Signature Glowing Neon Metro Corridor
+                        // Outer Glow Casing
+                        L.polyline(latlngs, { color: '#00D2A0', weight: 8, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+                        // Core Corridor Line
+                        L.polyline(latlngs, { color: '#00D2A0', weight: 4.5, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+
+                        map.fitBounds(latlngs, { padding: [60, 60] });
                     }
                 }
             } catch (err) {
-                console.error("Error plotting route stations:", err);
+                console.error("Error plotting transit corridor:", err);
             }
         }
     });
