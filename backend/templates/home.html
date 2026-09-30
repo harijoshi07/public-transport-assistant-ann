@@ -2,109 +2,246 @@
 {% load static %}
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/leaflet_routing.css' %}">
- 
-<style>
-    #map {
-        position: relative;
-        height: 100vh;
-        margin: 0;
-        padding: 0;
-        z-index: 0;
-    }
+<div class="app-viewport">
+    <!-- Map Container -->
+    <div id="map"></div>
 
-    #info-card {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        max-width: 360px;
-        padding: 18px 24px;
-        background-color: rgba(255, 255, 255, 0.95);
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        z-index: 1000;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    <!-- Floating Navigation & Intelligence Capsule -->
+    <aside class="floating-sidebar" id="sidebarPanel">
+        <!-- Header -->
+        <div class="panel-brand">
+            <div class="brand-title-wrap">
+                <div class="brand-logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 6v6"></path>
+                        <path d="M15 6v6"></path>
+                        <path d="M2 12h19.6"></path>
+                        <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4C2.9 6 1.9 6.8 1.6 7.8L.2 12.8c-.1.4-.2.8-.2 1.2 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3"></path>
+                        <circle cx="7" cy="18" r="2"></circle>
+                        <circle cx="15" cy="18" r="2"></circle>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Transit Assistant</h1>
+                    <p><span class="live-beacon"></span> Kathmandu Live Network</p>
+                </div>
+            </div>
+        </div>
 
-    #info-card h4 {
-        margin: 0 0 8px;
-        font-size: 16px;
-        font-weight: 700;
-        color: #111;
-    }
+        <!-- Navigation Tabs -->
+        <nav class="panel-tabs">
+            <button type="button" class="tab-btn active" id="tabPlan" onclick="switchTab('plan')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                Plan Trip
+            </button>
+            <button type="button" class="tab-btn" id="tabRoutes" onclick="switchTab('routes')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"></path><path d="M3 6h18"></path><path d="M3 18h18"></path></svg>
+                Routes (116)
+            </button>
+            <button type="button" class="tab-btn" id="tabSim" onclick="switchTab('sim')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Simulator
+            </button>
+            <button type="button" class="tab-btn" id="tabAI" onclick="switchTab('ai')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="m17 5-5-3-5 3"></path><path d="m17 19-5 3-5-3"></path><path d="M2 12h20"></path></svg>
+                AI Model
+            </button>
+        </nav>
 
-    #info-card p {
-        margin: 0 0 6px;
-        font-size: 13px;
-        color: #444;
-        line-height: 1.4;
-    }
-</style>
+        <!-- Tab 1: Journey Planner -->
+        <div class="panel-scroll-body" id="viewPlan">
+            <form id="searchJourneyForm" onsubmit="event.preventDefault(); submitPlan();">
+                <div class="search-capsule">
+                    <!-- Origin Field -->
+                    <div class="search-field-row">
+                        <span class="field-dot dot-origin"></span>
+                        <input id="inputOrigin" class="search-field-input" type="text" placeholder="Starting point (e.g. Kalanki)" value="{{ my_location_name|default:'' }}" required autocomplete="off">
+                    </div>
 
-<!-- 1st Sidebar Large Screen -->
-<nav class="w3-sidebar w3-blue-grey w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:70px;font-weight:bold;" id="mySidebar"><br>
-    <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
-    <br>
-    <button class="button w3-xlarge w3-round-large" onclick="w3_open1()" title="Search & Route Finding"><img src="{% static 'images/map.png' %}" style="height: 20px;"></button>
-    <button class="button w3-xlarge w3-round-large" onclick="w3_open2()" title="View All 116 Transit Routes"><img src="{% static 'images/route.png' %}" style="height: 20px;"></button>
-</nav>
+                    <div class="field-divider"></div>
 
-<!-- 1st Sidebar Small Screen -->
-<header class="w3-container w3-top w3-hide-large w3-blue-grey w3-xlarge w3-padding" style="z-index: 2;">
-    <a href="javascript:void(0)" class="w3-button w3-margin-right" onclick="w3_open()">☰</a>
-    <span>Public Transport Assistant</span>
-</header>
+                    <!-- Destination Field -->
+                    <div class="search-field-row">
+                        <span class="field-dot dot-dest"></span>
+                        <input id="inputDest" class="search-field-input" type="text" placeholder="Where to? (e.g. Koteshwor)" value="{{ dest_location_name|default:'' }}" required autocomplete="off">
+                        <button type="button" class="swap-btn" onclick="swapLocations()" title="Swap origin & destination">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="m21 8-4-4-4 4"></path><path d="M17 4v16"></path></svg>
+                        </button>
+                    </div>
+                </div>
 
-<!-- 2nd Sidebar: Search Form -->
-<div class="w3-sidebar w3-bar-block w3-border-right w3-animate-left" style="display:none; position: fixed; top: 0; left: 70px; width: 340px; z-index: 4; background: white;" id="x">
-    <div class="w3-padding" style="border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: bold; font-size: 15px;">Route Search</span>
-        <button onclick="w3_close1()" class="w3-button w3-text-red w3-round">&times;</button>
-    </div>
-    {% include 'Elements/forms.html' %}
-</div>
+                <button type="submit" class="btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Find Optimal Transit Route
+                </button>
+            </form>
 
-<!-- 3rd Sidebar: All Routes Cards -->
-<div class="w3-sidebar w3-bar-block w3-border-right w3-animate-left" style="display:none; position: fixed; top: 0; left: 70px; width: 380px; z-index: 4; background: white; overflow-y: auto;" id="y">
-    <div class="w3-padding" style="border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: bold; font-size: 15px;">All Bus Corridors (116)</span>
-        <button onclick="w3_close2()" class="w3-button w3-text-red w3-round">&times;</button>
-    </div>
-    {% include 'Elements/route_card.html' %}
-</div>
+            <!-- Quick Landmark Chips -->
+            <div class="chips-row">
+                <span class="chip-label">Popular Hubs:</span>
+                <button type="button" class="chip-btn" onclick="fillQuickRoute('Kalanki', 'Ratnapark')">Kalanki → Ratnapark</button>
+                <button type="button" class="chip-btn" onclick="fillQuickRoute('Lagankhel', 'Budhanilkantha')">Lagankhel → Budhanilkantha</button>
+                <button type="button" class="chip-btn" onclick="fillQuickRoute('Thapathali', 'Airport')">Thapathali → Airport</button>
+                <button type="button" class="chip-btn" onclick="fillQuickRoute('Koteshwor', 'Swayambhu')">Koteshwor → Swayambhu</button>
+            </div>
 
-<!-- Overlay effect when opening sidebar on small screens -->
-<div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+            <!-- Error Notice (if any) -->
+            {% if error %}
+            <div style="margin-top: 16px; padding: 12px 14px; background: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 8px; font-size: 13px; color: #991B1B;">
+                <strong>Notice:</strong> {{ error }}
+            </div>
+            {% endif %}
 
-<!-- Page Content -->
-<div class="w3-main" style="margin-left:70px;">
-    <div id="map">
-        {% if my_location_name and dest_location_name %}
-        <div id="info-card">
-            <h4>Route & Fare Details</h4>
-            <p><strong>From:</strong> {{ my_location_name }}</p>
-            <p><strong>Nearest Boarding:</strong> {{ nearest_user_station_english_name }}</p>
-            <p><strong>To:</strong> {{ dest_location_name }}</p>
-            <p><strong>Nearest Alighting:</strong> {{ nearest_dest_station_english_name }}</p>
-            {% if trip_distance_km %}
-            <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ddd;">
-            <p><strong>Estimated Distance:</strong> {{ trip_distance_km }} km</p>
-            <p style="font-size: 14px; font-weight: bold; color: #16A34A; margin-top: 4px;">
-                Calculated Fare: Rs. {{ fare_npr }}
-            </p>
+            <!-- Result Itinerary Card -->
+            {% if my_location_name and dest_location_name %}
+            <div class="journey-card">
+                <div class="journey-header">
+                    <span class="journey-title">Recommended Itinerary</span>
+                    <span class="fare-pill">Rs. {{ fare_npr }}</span>
+                </div>
+
+                <!-- Step-by-Step Stepper -->
+                <div class="journey-step">
+                    <div class="step-icon-wrap step-origin">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>
+                    </div>
+                    <div class="step-body">
+                        <h4>{{ my_location_name }}</h4>
+                        <p>Origin Location</p>
+                    </div>
+                </div>
+
+                <div class="journey-step">
+                    <div class="step-icon-wrap step-transit">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6v6"></path><path d="M15 6v6"></path><path d="M2 12h19.6"></path></svg>
+                    </div>
+                    <div class="step-body">
+                        <h4>Board at: {{ nearest_user_station_english_name }}</h4>
+                        <p>Walk to nearest transit boarding stop</p>
+                        <span class="transit-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
+                            Direct Kathmandu Bus Line
+                        </span>
+                    </div>
+                </div>
+
+                <div class="journey-step">
+                    <div class="step-icon-wrap step-dest">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path></svg>
+                    </div>
+                    <div class="step-body">
+                        <h4>Alight at: {{ nearest_dest_station_english_name }}</h4>
+                        <p>Walk to final destination: {{ dest_location_name }}</p>
+                    </div>
+                </div>
+
+                <!-- Trip Metrics -->
+                <div class="metrics-row">
+                    <div class="metric-item">
+                        <span>Distance</span>
+                        <strong>{{ trip_distance_km }} km</strong>
+                    </div>
+                    <div class="metric-item">
+                        <span>Base Tariff</span>
+                        <strong>Rs. {{ fare_npr }}</strong>
+                    </div>
+                    <div class="metric-item">
+                        <span>Status</span>
+                        <strong style="color: var(--success);">Normal Traffic</strong>
+                    </div>
+                </div>
+            </div>
             {% endif %}
         </div>
-        {% elif error %}
-        <div id="info-card" style="border-left: 4px solid #DC2626;">
-            <h4 style="color: #DC2626;">Search Notice</h4>
-            <p>{{ error }}</p>
+
+        <!-- Tab 2: Route Explorer (116 corridors) -->
+        <div class="panel-scroll-body" id="viewRoutes" style="display: none;">
+            <input type="text" class="routes-search-input" id="filterRouteInput" placeholder="Filter 116 routes (e.g. Kalanki, Airport, Lagankhel)..." oninput="filterRoutes()">
+            
+            <div id="routesListContainer">
+                {% for route in routes_variable %}
+                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/" class="route-card-link" data-search="{{ route.route_name|lower }} {{ route.route_start|lower }} {{ route.route_end|lower }}">
+                    <span class="route-badge-num">Route #{{ route.route_actual_id }}</span>
+                    <div class="route-card-title">{{ route.route_name }}</div>
+                    <div class="route-terminals">
+                        <span>{{ route.route_start }}</span>
+                        <span>→</span>
+                        <span>{{ route.route_end }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p style="font-size: 13px; color: var(--text-muted);">No routes loaded in database.</p>
+                {% endfor %}
+            </div>
         </div>
-        {% endif %}
-    </div>  
+
+        <!-- Tab 3: Live Simulator -->
+        <div class="panel-scroll-body" id="viewSim" style="display: none;">
+            <div class="sim-card">
+                <div class="sim-header">
+                    <h4>
+                        <span class="live-beacon"></span>
+                        GPS Telemetry Simulator
+                    </h4>
+                    <span class="sim-status-pill" id="simStatusPill">IDLE</span>
+                </div>
+                <div class="sim-body">
+                    <p>Simulates real-time hardware telemetry streaming along Kathmandu transit corridors (simulating Arduino Mega + GPS + GSM packets).</p>
+                    
+                    <div style="margin-top: 14px; font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; line-height: 1.6;">
+                        <div>Vehicle: <span style="color: #60A5FA;">Bus-01 (Sajha Yatayat)</span></div>
+                        <div>Coordinates: <span id="simCoords" style="color: #34D399;">27.6938, 85.3214</span></div>
+                        <div>Speed: <span id="simSpeed" style="color: #FBBF24;">0.0 km/h</span></div>
+                        <div>Packets Sent: <span id="simCount">0</span></div>
+                    </div>
+
+                    <div class="sim-actions">
+                        <button type="button" class="btn-sim" id="btnStartSim" onclick="toggleSimulation()">Start Live Stream</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 18px; padding: 14px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                <strong style="color: var(--text-main);">How Live Telemetry Works:</strong>
+                <p style="margin-top: 4px;">In production, the vehicle's onboard microcontroller streams GPS packets over cellular GPRS every 30s to the ThingSpeak/Django ingestion pipeline. WebSockets push updates dynamically to this interface.</p>
+            </div>
+        </div>
+
+        <!-- Tab 4: AI Model Specifications -->
+        <div class="panel-scroll-body" id="viewAI" style="display: none;">
+            <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <h4 style="font-size: 14px; font-weight: 700; color: var(--text-main);">ANN ETA Model (Keras)</h4>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--success); background: var(--success-soft); padding: 2px 8px; border-radius: 999px;">R² = 0.965</span>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                    Feedforward artificial neural network trained on Kathmandu bus GPS records (2022–2023) predicting travel times between stops under variable congestion.
+                </p>
+
+                <div style="margin-top: 14px; font-family: var(--font-mono); font-size: 11px; background: var(--surface-muted); padding: 12px; border-radius: 8px; line-height: 1.6;">
+                    <div>Input Features : <strong>10 Normalized Variables</strong></div>
+                    <div>Hidden Layer 1: <strong>Dense(64, ReLU) + Dropout(0.3)</strong></div>
+                    <div>Hidden Layer 2: <strong>Dense(32, ReLU) + Dropout(0.3)</strong></div>
+                    <div>Output Layer  : <strong>Dense(1, Linear)</strong></div>
+                    <div>Loss Function : <strong>Mean Absolute Error (MAE)</strong></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; text-align: center;">
+                    <div style="background: var(--surface-muted); padding: 8px; border-radius: 6px;">
+                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">MAPE Error</span>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">6.74%</div>
+                    </div>
+                    <div style="background: var(--surface-muted); padding: 8px; border-radius: 6px;">
+                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Test Loss (MAE)</span>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">0.00067</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
 </div>
 
-<!-- Safe JSON script data from view context -->
+<!-- Safe JSON Data from Backend -->
 {{ my_location_lat_long|json_script:"myLoc" }}
 {{ nearest_user_station_lat_long|json_script:"nearestMyLoc" }}
 {{ nearest_dest_station_lat_long|json_script:"nearestDestLoc" }}
@@ -117,32 +254,129 @@
 <script src="{% static 'js/4_routing.js' %}"></script>
 
 <script>
-    function w3_open() {
-        document.getElementById("mySidebar").style.display = "block";
-        document.getElementById("myOverlay").style.display = "block";
-    }
-        
-    function w3_close() {
-        document.getElementById("mySidebar").style.display = "none";
-        document.getElementById("myOverlay").style.display = "none";
+    // Tab Switching Logic
+    function switchTab(tabId) {
+        const tabs = ['plan', 'routes', 'sim', 'ai'];
+        tabs.forEach(t => {
+            const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+            const view = document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1));
+            if (btn && view) {
+                if (t === tabId) {
+                    btn.classList.add('active');
+                    view.style.display = 'block';
+                } else {
+                    btn.classList.remove('active');
+                    view.style.display = 'none';
+                }
+            }
+        });
     }
 
-    function w3_open1() {
-        w3_close2();
-        document.getElementById("x").style.display = "block";
-    }
-        
-    function w3_close1() {
-        document.getElementById("x").style.display = "none";
+    // Quick fill helper
+    function fillQuickRoute(origin, dest) {
+        document.getElementById('inputOrigin').value = origin;
+        document.getElementById('inputDest').value = dest;
+        submitPlan();
     }
 
-    function w3_open2() {
-        w3_close1();
-        document.getElementById("y").style.display = "block";
+    // Location swap
+    function swapLocations() {
+        const o = document.getElementById('inputOrigin');
+        const d = document.getElementById('inputDest');
+        const temp = o.value;
+        o.value = d.value;
+        d.value = temp;
     }
-        
-    function w3_close2() {
-        document.getElementById("y").style.display = "none";
+
+    // Submit Plan
+    function submitPlan() {
+        const o = document.getElementById('inputOrigin').value.trim();
+        const d = document.getElementById('inputDest').value.trim();
+        if (!o || !d) {
+            alert('Please specify both an origin and destination.');
+            return;
+        }
+        window.location.href = '/api/post-to-get-nearest-station/' + encodeURIComponent(o) + '/' + encodeURIComponent(d) + '/';
+    }
+
+    // Filter Routes in Tab 2
+    function filterRoutes() {
+        const q = document.getElementById('filterRouteInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.route-card-link');
+        cards.forEach(c => {
+            const text = c.getAttribute('data-search') || '';
+            c.style.display = text.includes(q) ? 'block' : 'none';
+        });
+    }
+
+    // ── Live Telemetry Simulation Engine ──
+    let simInterval = null;
+    let simMarker = null;
+    let simIndex = 0;
+    let simCount = 0;
+
+    // Kathmandu route coordinates (Kalanki -> Maitighar -> Koteshwor corridor)
+    const SIM_PATH = [
+        [27.6938, 85.2814], [27.6948, 85.2905], [27.6960, 85.2990],
+        [27.6975, 85.3080], [27.6938, 85.3180], [27.6915, 85.3225],
+        [27.6890, 85.3280], [27.6845, 85.3340], [27.6800, 85.3400],
+        [27.6765, 85.3450], [27.6750, 85.3485]
+    ];
+
+    function toggleSimulation() {
+        const btn = document.getElementById('btnStartSim');
+        const pill = document.getElementById('simStatusPill');
+
+        if (simInterval) {
+            // Stop simulation
+            clearInterval(simInterval);
+            simInterval = null;
+            btn.textContent = 'Resume Live Stream';
+            btn.classList.remove('btn-sim-stop');
+            pill.textContent = 'PAUSED';
+            pill.style.background = 'rgba(255, 255, 255, 0.15)';
+        } else {
+            // Start simulation
+            btn.textContent = 'Pause Simulation';
+            btn.classList.add('btn-sim-stop');
+            pill.textContent = 'TRANSMITTING';
+            pill.style.background = '#10B981';
+
+            if (!simMarker) {
+                const busIcon = L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34]
+                });
+                simMarker = L.marker(SIM_PATH[0], { icon: busIcon }).addTo(map);
+                simMarker.bindPopup('<b>🚌 Live Bus #1</b><br>Speed: 28 km/h<br>Corridor: Kalanki - Koteshwor').openPopup();
+                map.setView(SIM_PATH[0], 14);
+            }
+
+            simInterval = setInterval(() => {
+                simIndex = (simIndex + 1) % SIM_PATH.length;
+                const pos = SIM_PATH[simIndex];
+                simMarker.setLatLng(pos);
+                simCount++;
+
+                document.getElementById('simCoords').textContent = pos[0].toFixed(4) + ', ' + pos[1].toFixed(4);
+                document.getElementById('simSpeed').textContent = (20 + Math.random() * 15).toFixed(1) + ' km/h';
+                document.getElementById('simCount').textContent = simCount;
+
+                // Send real telemetry POST to local backend API
+                fetch('/api/post_realtime_gps_data/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        current_device_id: 1,
+                        current_latitude: pos[0],
+                        current_longitude: pos[1]
+                    })
+                }).catch(e => console.log('Sim telemetry push:', e));
+            }, 2500);
+        }
     }
 </script>
+
 {% endblock %}
