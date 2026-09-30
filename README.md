@@ -194,7 +194,7 @@ This project was developed and defended as an academic minor project at **Tribhu
 
 ### Team Members:
 - **Chandra Mohan Sah** (THA077BEI017)
-- **Hari Krishna Joshi** (THA077BEI018) — *Team Lead*
+- **Hari Krishna Joshi** (THA077BEI018)
 - **Jyotsna Jha** (THA077BEI019)
 - **Khagendra Raj Joshi** (THA077BEI022)
 
