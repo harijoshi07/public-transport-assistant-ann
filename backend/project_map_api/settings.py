@@ -23,7 +23,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'routeplot_app',
     'rest_framework',
-    'django.contrib.postgres',
     'hardware_app',
 ]
 
