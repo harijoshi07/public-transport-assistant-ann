@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/leaflet_routing.css' %}">
+ 
+<style>
+    #map {
+        position: relative;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        z-index: 0;
+    }
+
+    #hello-world-card {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        text-align: center;
+        font-size: 24px;
+        z-index: 160;
+    }
+
+    #search-bar {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: none;
+        padding: 10px;
+        z-index: 1000;
+    }
+
+    #suggestions {
+        list-style: none;
+        padding: 0;
+        display: none;
+    }
+</style>
+
+
+<!-- 1st Sidebar Large Screen-->
+<nav class="w3-sidebar  w3-blue-grey w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:70px;font-weight:bold;" id="mySidebar"><br>
+    <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
+    <br>
+    <button class="button w3-xlarge w3-round-large" onclick="w3_open1()"><img src="{% static "images/map.png" %}" style="height: 20px;"></button>
+
+    <div >
+    </div>
+</nav>
+
+<!-- 1st Sidebar Small Screen-->
+<header class="w3-container w3-top w3-hide-large w3-blue-grey w3-xlarge w3-padding">
+    <a href="javascript:void(0)" class="w3-button  w3-margin-right" onclick="w3_open()">☰</a>
+    <span>Hamro Kathmandu</span>
+</header>
+
+
+<!-- 2nd Sidebar  Large Screen-->
+<div class="w3-sidebar w3-bar-block w3-border-right  w3-animate-left" style="display:none; position: relative; top: 0; left: 70px;" id="x">
+    <button onclick="w3_close1()" class="w3-bar-item w3-round w3-text-red w3-border w3-serif" >CLOSE &times;</button>
+    <br>
+    {% include 'Elements/routeStations.html' %}
+</div>
+
+<!-- 2nd Sidebar  Small Screen-->
+<div class="w3-sidebar w3-bar-block w3-border-right w3-hide-large  w3-animate-left" style="display:none; position: relative; top: 0; left: 70px;" id="x">
+    <button onclick="w3_close1()" class="w3-bar-item w3-round w3-text-red w3-border w3-serif">CLOSE &times;</button>
+    <br>
+    {% include 'Elements/routeStations.html' %}
+</div>
+
+
+<!-- Overlay effect when opening sidebar on small screens -->
+<div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:70px;margin-right:1px">
+
+
+
+<div>
+    <div id="map">
+        <div id="hello-world-card">
+            <p>Public Transport Assistant</p>
+        </div>
+    </div>  
+
+        <!--This form is handled by : 5_userform.js-->
+        <div id="search-bar" class="w3-card w3-round-large">
+            <form id="search-form">
+              <label for="destination-location"><img src="{% static "images/dest.png" %}" style="height: 22px;"></label>
+              <input type="text" id="destination-location" placeholder="Filter Route By Stations" name="destination-location">
+              <ul id="suggestions"></ul>
+            </form>
+        </div>
+
+</div>
+
+<!-- Accessing variables from response_data -->
+<!-- Your existing code for displaying location information -->
+
+<!-- Use json_script to safely output Python variables as JSON in a script tag -->
+{{ my_location_lat_long|json_script:"myLoc" }}
+{{ nearest_user_station_lat_long|json_script:"nearestMyLoc" }}
+{{ nearest_dest_station_lat_long|json_script:"nearestDestLoc" }}
+{{ dest_location_lat_long|json_script:"destLoc" }}
+{{ stations|json_script:"stationData" }}
+ 
+
+<script src="{% static 'js/1_outputMenu.js' %}"></script>
+<script src="{% static 'js/2_loadmap.js' %}"></script>
+<script src="{% static 'js/3_myLocation.js' %}"></script>
+<script src="{% static 'js/4_routing.js' %}"></script>
+<script src="{% static 'js/dummy1.js' %}"></script>
+<script src="{% static 'js/5_userform.js' %}"></script>
+
+
+<script>
+    // Script to open and close sidebar
+    function w3_open() {
+    document.getElementById("mySidebar").style.display = "block";
+    document.getElementById("myOverlay").style.display = "block";
+    }
+        
+    function w3_close() {
+    document.getElementById("mySidebar").style.display = "none";
+    document.getElementById("myOverlay").style.display = "none";
+    }
+        
+
+    function w3_open1() {
+        document.getElementById("x").style.width = "25%";
+        document.getElementById("x").style.display = "block";
+    }
+        
+    function w3_close1() {
+        document.getElementById("x").style.width = "25%";
+        document.getElementById("x").style.display = "none";
+    }
+
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

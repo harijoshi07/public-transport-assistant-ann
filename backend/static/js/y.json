@@ -1,0 +1,14 @@
+{
+    "id": 1,
+    "route_information": [
+        "Route ID : 4:  Lagankhel-jwalakhel-Thapathali-Ratnapark-Jamal-Lainchaur-Narayan Gopal Chok-Budanilkantha --> Station ID : 1329  :  Lagankhel Bus Park --> Order : 1",
+        "Route ID : 4:  Lagankhel-jwalakhel-Thapathali-Ratnapark-Jamal-Lainchaur-Narayan Gopal Chok-Budanilkantha --> Station ID : 3676  :  Route Point --> Order : 2",
+        "Route ID : 4:  Lagankhel-jwalakhel-Thapathali-Ratnapark-Jamal-Lainchaur-Narayan Gopal Chok-Budanilkantha --> Station ID : 1039  :  Patan Hospital Bus Route Point --> Order : 3",
+        "Route ID : 4:  Lagankhel-jwalakhel-Thapathali-Ratnapark-Jamal-Lainchaur-Narayan Gopal Chok-Budanilkantha --> Station ID : 3550  :  Kumari --> Order : 4"
+    ],
+    "route_id": 4,
+    "route_english_name": "Lagankhel-jwalakhel-Thapathali-Ratnapark-Jamal-Lainchaur-Narayan Gopal Chok-Budanilkantha",
+    "route_nepali_name": "लगनखेल-जावलाखेल-थापाथली-रत्नपार्क-जमल-लैनचौर-नारायणगोपाल चोक-बुढानिलकण्ठ",
+    "start": "लगनखेल",
+    "end": "बुढानिलकण्ठ"
+}

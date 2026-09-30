@@ -1,0 +1,93 @@
+<div id='formhandling' >
+    <form id="myForm" class="w3-padding" style="max-width: 350px;" method="post" >
+        {% csrf_token %}
+        <input id="loc1" class="w3-input w3-border-red w3-round w3-serif padding" name="userlocation" type="text" placeholder="Your Location">
+        <input id="loc2" class="w3-input w3-border-red w3-round w3-serif padding" name="destlocation" type="text" placeholder="Destination Location">
+        <div class="w3-padding" >
+            <button type="button" onclick="submitForm()" >Submit</button>
+        </div>
+    </form>    
+    <ul id="suggestions-list" class="w3-bar"></ul>
+</div>
+
+ 
+
+<script>
+
+    const searchInput = document.getElementById('loc2');
+    const suggestionsList = document.getElementById('suggestions-list');
+
+    // Function to make a request to the GraphHopper API and get location suggestions
+    async function getLocationSuggestions(query) {
+        const apiKey = '8e95a1e4-6d07-488c-8f23-d95874da0c18';
+        const endpoint = 'https://graphhopper.com/api/1/geocode';
+
+        
+        const response = await fetch(`${endpoint}?q=${query}&key=${apiKey}`);
+        const data = await response.json();
+
+        // Filter results to include only Nepal addresses
+        const nepalSuggestions = data.hits.filter(hit => hit.countrycode === 'NP');
+
+        return nepalSuggestions.map(hit => hit.name);
+    }
+
+    
+    // Function to update the suggestions list based on user input
+    async function updateSuggestions() {
+        const query = searchInput.value.trim();
+
+        if (query.length === 0) {
+            suggestionsList.style.display = 'none';
+            return;
+        }
+
+        const suggestions = await getLocationSuggestions(query);
+
+        if (suggestions.length > 0) {
+            suggestionsList.innerHTML = suggestions.map(suggestion => `<li>${suggestion}</li>`).join('');
+            suggestionsList.style.display = 'block';
+        } else {
+            suggestionsList.style.display = 'none';
+        }
+    }
+
+    // Event listener for input changes
+    searchInput.addEventListener('input', updateSuggestions);
+
+    // Event listener to handle suggestion selection
+    suggestionsList.addEventListener('click', (event) => {
+        if (event.target.tagName === 'LI') {
+            searchInput.value = event.target.textContent;
+            suggestionsList.style.display = 'none';
+        }
+    });    
+
+
+    function submitForm() {
+        // Get the values of loc1 and loc2
+        var loc1Value = document.getElementById("loc1").value;
+        var loc2Value = document.getElementById("loc2").value;
+
+        // Update the form action with the dynamic values
+        var form = document.getElementById("myForm");
+        form.action = "http://localhost:8000/api/post-to-get-nearest-station/" + loc1Value + "/" + loc2Value + "/";
+
+        // Submit the form
+        form.submit();
+    }
+    
+    
+</script>
+
+
+
+
+
+
+
+
+
+
+
+

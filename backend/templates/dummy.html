@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
+
+<div class="w3-padding-32">
+    <div class="w3-row-padding">
+
+        {% include 'Elements/map.html' %}
+
+        {% include 'Elements/output.html' %}
+        
+    </div>
+</div>
+
+
+<script>
+    //Python Variables
+   var stations = {{ stations|safe }};
+</script>
+
+ 
+
+<script>
+   //------------------- Tabbed Menu ---------------------------------------//
+   function openMenu(evt, menuName) {
+    var i, x, tablinks;
+    x = document.getElementsByClassName("menu");
+  
+    for (i = 0; i < x.length; i++) {
+      x[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablink");
+  
+    for (i = 0; i < x.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" w3-dark-grey", "");
+    }
+  
+    document.getElementById(menuName).style.display = "block";
+    evt.currentTarget.firstElementChild.className += " w3-dark-grey";
+  }
+  document.getElementById("myLink").click();
+
+ 
+  // ---------------------------Leaflet Map -----------------------------------------------------//
+    const key = 'DPeytGXTs5DU9As7z62J';
+
+    const map = L.map('map').setView([27.6938263, 85.3213987], 15);
+
+    const mtLayer = L.maptilerLayer({
+      apiKey: key,
+      style: "f333b8a3-3867-44c9-8695-f2d1dd7f5dea", //optional
+    }).addTo(map);
+    
+    // Add markers for each station
+    stations.forEach(station => {
+        L.marker([station.latitude, station.longitude]).addTo(map)
+        .bindPopup(station.station_english_name);
+    });
+
+
+    const location1 = [27.7083895, 85.3443544];
+    const location2 = [27.693499775963488, 85.32754428684711];
+
+    // Create routing control with custom style for dotted line
+    const control = L.Routing.control({
+        waypoints: [
+            L.latLng(location1),
+            L.latLng(location2)
+        ],
+        routeWhileDragging: true,
+        addWaypoints: false,
+        draggableWaypoints: false,
+        lineOptions: {
+            styles: [{color: 'blue', opacity: 0.9, dashArray: '12, 12'}] // Set the dash pattern for a dotted line
+        },
+        show: false // Disable direction information
+    }).addTo(map);
+
+    // Add markers for Location1 and Location2
+    L.marker(location1).addTo(map).bindPopup('Location 1');
+    L.marker(location2).addTo(map).bindPopup('Location 2');
+
+</script>
+
+{% endblock %}

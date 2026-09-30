@@ -1,0 +1,18 @@
+{% for station in stations_variable %}
+    <p>
+        Station ID: {{ station.station_id }}<br>
+        English Name: {{ station.station_english_name }}<br>
+        Latitude: {{ station.station_latitude }}<br>
+        Longitude: {{ station.station_longitude }}<br>
+    </p>
+
+    {{ station.station_latitude|json_script:"latitude" }}
+    {{ station.station_longitude|json_script:"longitude"}}
+    <script>
+        L.marker([27.6810413, 85.3174478]).addTo(map).bindPopup('Source Location');
+        L.marker([27.668300407052254, 85.32169438898563]).addTo(map).bindPopup('Source Location');
+    </script>
+    
+
+{% endfor %}
+

@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>Public Transport Assistent</title>
+ 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+
+     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+     
+     <script src="https://cdn.maptiler.com/maptiler-sdk-js/v1.2.0/maptiler-sdk.umd.js"></script>
+     <link href="https://cdn.maptiler.com/maptiler-sdk-js/v1.2.0/maptiler-sdk.css" rel="stylesheet" />
+     <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v2.0.0/leaflet-maptilersdk.js"></script>
+     <script src="https://cdn.maptiler.com/maptiler-geocoding-control/v1.2.0/leaflet.umd.js"></script>
+     <link href="https://cdn.maptiler.com/maptiler-geocoding-control/v1.2.0/style.css" rel="stylesheet">
+     
+
+    <!-- GraphHopper JS -->
+    <script src="{% static 'js/lrm-graphhopper.js' %}"></script>
+    <script src="https://unpkg.com/graphhopper-js-api-client/dist/graphhopper-client.js"></script>
+
+
+
+<style>
+    body, html {
+    height: 100%;
+    font-family: "Inconsolata", sans-serif;
+    background-color: whitesmoke;
+    }
+
+    .bgimg {
+        background-position: center;
+        background-size: cover;
+        background-image: url("/images/bus.png");
+        min-height: 75%;
+    }
+
+</style>
+
+</head>
+<body>
+{% block content %}
+
+
+
+
+{% endblock %}
+
+</div>
+
+</body>

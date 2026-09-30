@@ -1,0 +1,82 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/routecard.css' %}">
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 0;
+    }
+
+    .route-card {
+        width: 80%;
+        margin: 20px auto;
+    }
+
+    .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .card {
+        width: 350px; 
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        transition: transform 0.2s;
+        margin: 10px;
+        text-align: left;
+        cursor: pointer; 
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+    a {
+        text-decoration: none; 
+        color: inherit; 
+        position: relative;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+
+  
+    p {
+        text-align: center;
+        color: #888;
+    }
+</style>
+
+<div class="route-card">
+    <h1>Route Information</h1>
+
+    {% if routes_variable %}
+        <div class="card-container">
+            {% for route in routes_variable %}
+                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/" target="_blank">
+                    <div class="card">
+                        <strong>Route Number:</strong> {{ route.route_id }}<br>
+                        <strong>Route Name:</strong> {{ route.route_name }}<br>
+                        <strong>Start Point:</strong> {{ route.route_start }}<br>
+                        <strong>End Point:</strong> {{ route.route_end }}<br>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No routes available.</p>
+    {% endif %}
+</div>
+
+
+
+
