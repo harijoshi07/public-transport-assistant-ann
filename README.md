@@ -142,8 +142,8 @@ As documented in **Section 5.2.3** of the Project Report, a feedforward dense ne
 
 ```bash
 # Clone the repository
-git clone https://github.com/harijoshi07/public-transport-assistant-ann.git
-cd public-transport-assistant-ann
+git clone https://github.com/harijoshi07/public-transport-assisstant-ann.git
+cd public-transport-assisstant-ann
 
 # Create and activate virtual environment
 python3 -m venv venv
