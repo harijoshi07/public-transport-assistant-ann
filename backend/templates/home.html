@@ -13,128 +13,122 @@
         z-index: 0;
     }
 
-    #hello-world-card {
+    #info-card {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        padding: 20px;
-        background-color: rgba(255, 255, 255, 0.8);
-        border-radius: 10px;
-        text-align: center;
-        font-size: 24px;
-        z-index: 160;
-    }
-
-    #search-bar {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background: none;
-        padding: 10px;
+        top: 20px;
+        right: 20px;
+        max-width: 360px;
+        padding: 18px 24px;
+        background-color: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         z-index: 1000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    #suggestions {
-        list-style: none;
-        padding: 0;
-        display: none;
+    #info-card h4 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #111;
+    }
+
+    #info-card p {
+        margin: 0 0 6px;
+        font-size: 13px;
+        color: #444;
+        line-height: 1.4;
     }
 </style>
-<!-- ======================================================================================================= -->
- 
 
-<!-- 1st Sidebar Large Screen-->
-<nav class="w3-sidebar  w3-blue-grey w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:70px;font-weight:bold;" id="mySidebar"><br>
+<!-- 1st Sidebar Large Screen -->
+<nav class="w3-sidebar w3-blue-grey w3-collapse w3-top w3-large w3-padding" style="z-index:3;width:70px;font-weight:bold;" id="mySidebar"><br>
     <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
     <br>
-    <button class="button w3-xlarge w3-round-large" onclick="w3_open1()"><img src="{% static "images/map.png" %}" style="height: 20px;"></button>
-    <button class="button w3-xlarge w3-round-large" onclick="w3_open2()"><img src="{% static "images/map.png" %}" style="height: 20px;"></button>
-
-    <div >
-    </div>
+    <button class="button w3-xlarge w3-round-large" onclick="w3_open1()" title="Search & Route Finding"><img src="{% static 'images/map.png' %}" style="height: 20px;"></button>
+    <button class="button w3-xlarge w3-round-large" onclick="w3_open2()" title="View All 116 Transit Routes"><img src="{% static 'images/route.png' %}" style="height: 20px;"></button>
 </nav>
 
-<!-- 1st Sidebar Small Screen-->
-<header class="w3-container w3-top w3-hide-large w3-blue-grey w3-xlarge w3-padding">
-    <a href="javascript:void(0)" class="w3-button  w3-margin-right" onclick="w3_open()">☰</a>
-    <span>Hamro Kathmandu</span>
+<!-- 1st Sidebar Small Screen -->
+<header class="w3-container w3-top w3-hide-large w3-blue-grey w3-xlarge w3-padding" style="z-index: 2;">
+    <a href="javascript:void(0)" class="w3-button w3-margin-right" onclick="w3_open()">☰</a>
+    <span>Public Transport Assistant</span>
 </header>
 
-
-<!-- 2nd Sidebar  Large Screen-->
-<div class="w3-sidebar w3-bar-block w3-border-right  w3-animate-left" style="display:none; position: relative; top: 0; left: 70px;" id="x">
-    <button onclick="w3_close1()" class="w3-bar-item w3-round w3-text-red w3-border w3-serif" >CLOSE &times;</button>
-    <br>
+<!-- 2nd Sidebar: Search Form -->
+<div class="w3-sidebar w3-bar-block w3-border-right w3-animate-left" style="display:none; position: fixed; top: 0; left: 70px; width: 340px; z-index: 4; background: white;" id="x">
+    <div class="w3-padding" style="border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: bold; font-size: 15px;">Route Search</span>
+        <button onclick="w3_close1()" class="w3-button w3-text-red w3-round">&times;</button>
+    </div>
     {% include 'Elements/forms.html' %}
 </div>
 
-<!-- 2nd Sidebar  Small Screen-->
-<div class="w3-sidebar w3-bar-block w3-border-right w3-hide-large  w3-animate-left" style="display:none; position: relative; top: 0; left: 70px;" id="x">
-    <button onclick="w3_close1()" class="w3-bar-item w3-round w3-text-red w3-border w3-serif">CLOSE &times;</button>
-    <br>
-    {% include 'Elements/forms.html' %}
-</div>
-
-
-<!-- 3rd Sidebar  Large Screen-->
-<div class="w3-sidebar w3-bar-block w3-border-right  w3-animate-left" style="display:none; position: relative; top: 0; left: 70px;" id="y">
-    <button onclick="w3_close2()" class="w3-bar-item w3-round w3-text-red w3-border w3-serif">CLOSE &times;</button>
-    <br>
+<!-- 3rd Sidebar: All Routes Cards -->
+<div class="w3-sidebar w3-bar-block w3-border-right w3-animate-left" style="display:none; position: fixed; top: 0; left: 70px; width: 380px; z-index: 4; background: white; overflow-y: auto;" id="y">
+    <div class="w3-padding" style="border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: bold; font-size: 15px;">All Bus Corridors (116)</span>
+        <button onclick="w3_close2()" class="w3-button w3-text-red w3-round">&times;</button>
+    </div>
     {% include 'Elements/route_card.html' %}
 </div>
 
 <!-- Overlay effect when opening sidebar on small screens -->
 <div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
-<!-- !PAGE CONTENT! -->
-<div class="w3-main" style="margin-left:70px;margin-right:1px">
 
-
-<!-- ======================================================================================================= -->
- 
-<div>
+<!-- Page Content -->
+<div class="w3-main" style="margin-left:70px;">
     <div id="map">
-        <div id="hello-world-card">
-            <p>Public Transport Assistant</p>
+        {% if my_location_name and dest_location_name %}
+        <div id="info-card">
+            <h4>Route & Fare Details</h4>
+            <p><strong>From:</strong> {{ my_location_name }}</p>
+            <p><strong>Nearest Boarding:</strong> {{ nearest_user_station_english_name }}</p>
+            <p><strong>To:</strong> {{ dest_location_name }}</p>
+            <p><strong>Nearest Alighting:</strong> {{ nearest_dest_station_english_name }}</p>
+            {% if trip_distance_km %}
+            <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ddd;">
+            <p><strong>Estimated Distance:</strong> {{ trip_distance_km }} km</p>
+            <p style="font-size: 14px; font-weight: bold; color: #16A34A; margin-top: 4px;">
+                Calculated Fare: Rs. {{ fare_npr }}
+            </p>
+            {% endif %}
         </div>
+        {% elif error %}
+        <div id="info-card" style="border-left: 4px solid #DC2626;">
+            <h4 style="color: #DC2626;">Search Notice</h4>
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
     </div>  
-
 </div>
 
-<!-- Accessing variables from response_data -->
-<!-- Your existing code for displaying location information -->
-
-<!-- Use json_script to safely output Python variables as JSON in a script tag -->
+<!-- Safe JSON script data from view context -->
 {{ my_location_lat_long|json_script:"myLoc" }}
 {{ nearest_user_station_lat_long|json_script:"nearestMyLoc" }}
 {{ nearest_dest_station_lat_long|json_script:"nearestDestLoc" }}
 {{ dest_location_lat_long|json_script:"destLoc" }}
 {{ stations|json_script:"stationData" }}
- 
 
 <script src="{% static 'js/1_outputMenu.js' %}"></script>
 <script src="{% static 'js/2_loadmap.js' %}"></script>
 <script src="{% static 'js/3_myLocation.js' %}"></script>
 <script src="{% static 'js/4_routing.js' %}"></script>
-<script src="{% static 'js/dummy1.js' %}"></script>
-<script src="{% static 'js/5_userform.js' %}"></script>
-
-<!-- Add the new JavaScript code for handling location suggestions -->
 
 <script>
-    // Script to open and close sidebar
     function w3_open() {
-    document.getElementById("mySidebar").style.display = "block";
-    document.getElementById("myOverlay").style.display = "block";
+        document.getElementById("mySidebar").style.display = "block";
+        document.getElementById("myOverlay").style.display = "block";
     }
         
     function w3_close() {
-    document.getElementById("mySidebar").style.display = "none";
-    document.getElementById("myOverlay").style.display = "none";
+        document.getElementById("mySidebar").style.display = "none";
+        document.getElementById("myOverlay").style.display = "none";
     }
-        
 
     function w3_open1() {
+        w3_close2();
         document.getElementById("x").style.display = "block";
     }
         
@@ -143,24 +137,12 @@
     }
 
     function w3_open2() {
-        document.getElementById("y").style.width = "30%";
+        w3_close1();
         document.getElementById("y").style.display = "block";
     }
         
     function w3_close2() {
-        document.getElementById("y").style.width = "30%";
         document.getElementById("y").style.display = "none";
     }
-
 </script>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-

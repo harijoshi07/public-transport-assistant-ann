@@ -21,13 +21,35 @@ def Get_Routes(request):
 
 
 def Get_Stations_on_Route(request, routenumber):
-    """Renders stations along a selected transit route."""
-    station_ids = RouteStationInfo.objects.filter(route_info=routenumber).values_list('station_info', flat=True)
-    query_set = StationInfo.objects.filter(id__in=station_ids).values(
-        'station_id', 'station_english_name', 'station_latitude', 'station_longitude'
+    """Renders stations along a selected transit route in sequential order."""
+    route_obj = (
+        RouteInfo.objects.filter(id=routenumber).first()
+        or RouteInfo.objects.filter(route_id=routenumber).first()
     )
-    context = {"stations_variable": list(query_set)}
-    return render(request, 'home2.html', context)
+    if not route_obj:
+        return render(request, 'home2.html', {'stations_variable': []})
+
+    route_stations = RouteStationInfo.objects.filter(route_info=route_obj).order_by('station_order')
+    station_fks = [rs.station_info_id for rs in route_stations]
+    stations = StationInfo.objects.filter(id__in=station_fks)
+    station_map = {s.id: s for s in stations}
+
+    stations_ordered = []
+    for rs in route_stations:
+        s = station_map.get(rs.station_info_id)
+        if s:
+            stations_ordered.append({
+                'station_id': s.station_id,
+                'station_english_name': s.station_english_name,
+                'station_latitude': s.station_latitude,
+                'station_longitude': s.station_longitude,
+                'station_order': rs.station_order,
+            })
+
+    return render(request, 'home2.html', {
+        'stations_variable': stations_ordered,
+        'current_route': route_obj
+    })
 
 
 def Post_GPS_Location(request, deviceid, latitude, longitude):

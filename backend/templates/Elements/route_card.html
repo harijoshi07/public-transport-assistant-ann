@@ -62,7 +62,7 @@
     {% if routes_variable %}
         <div class="card-container">
             {% for route in routes_variable %}
-                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/" target="_blank">
+                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/">
                     <div class="card">
                         <strong>Route Number:</strong> {{ route.route_id }}<br>
                         <strong>Route Name:</strong> {{ route.route_name }}<br>

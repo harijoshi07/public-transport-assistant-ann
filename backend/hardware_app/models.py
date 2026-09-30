@@ -4,9 +4,9 @@ from routeplot_app.models import RouteInfo
 # Create your models here.
  
 class DeviceID(models.Model):
-    route_id = models.ForeignKey(RouteInfo, on_delete=models.CASCADE, related_name='device_id')
-    device_id = models.IntegerField()
-    device_name = models.CharField(max_length=255)
+    route_id = models.ForeignKey(RouteInfo, on_delete=models.SET_NULL, null=True, blank=True, related_name='devices')
+    device_id = models.IntegerField(unique=True)
+    device_name = models.CharField(max_length=255, default='Bus Device')
 
     def __str__(self):
         return f"Device Name: {self.device_name} --> DeviceID {self.device_id} "

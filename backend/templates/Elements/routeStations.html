@@ -1,18 +1,61 @@
-{% for station in stations_variable %}
-    <p>
-        Station ID: {{ station.station_id }}<br>
-        English Name: {{ station.station_english_name }}<br>
-        Latitude: {{ station.station_latitude }}<br>
-        Longitude: {{ station.station_longitude }}<br>
-    </p>
+<div style="padding: 14px; max-height: 85vh; overflow-y: auto;">
+    <h4 style="margin: 0 0 12px; font-size: 16px; font-weight: bold; color: #111;">Stations Along Route</h4>
 
-    {{ station.station_latitude|json_script:"latitude" }}
-    {{ station.station_longitude|json_script:"longitude"}}
-    <script>
-        L.marker([27.6810413, 85.3174478]).addTo(map).bindPopup('Source Location');
-        L.marker([27.668300407052254, 85.32169438898563]).addTo(map).bindPopup('Source Location');
-    </script>
-    
+    {% if stations_variable %}
+        <div style="margin-bottom: 12px; font-size: 13px; color: #666;">
+            Showing {{ stations_variable|length }} transit stops:
+        </div>
+        <ol style="padding-left: 20px; font-size: 13px; line-height: 1.6; color: #333;">
+            {% for station in stations_variable %}
+                <li style="margin-bottom: 6px;">
+                    <strong>{{ station.station_english_name }}</strong>
+                    <br>
+                    <span style="font-size: 11px; color: #888;">ID: {{ station.station_id }} ({{ station.station_latitude|floatformat:4 }}, {{ station.station_longitude|floatformat:4 }})</span>
+                </li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p style="font-size: 13px; color: #888;">No stations found for this route.</p>
+    {% endif %}
+</div>
 
-{% endfor %}
+<!-- Output stations JSON for dynamic Leaflet plotting -->
+{{ stations_variable|json_script:"routeStationsJson" }}
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stationsEl = document.getElementById('routeStationsJson');
+        if (stationsEl && typeof map !== 'undefined') {
+            try {
+                const stations = JSON.parse(stationsEl.textContent);
+                if (Array.isArray(stations) && stations.length > 0) {
+                    const latlngs = [];
+                    const stationIcon = L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+                        iconSize: [20, 32],
+                        iconAnchor: [10, 32],
+                        popupAnchor: [1, -28],
+                    });
+
+                    stations.forEach(function (s, idx) {
+                        if (s.station_latitude && s.station_longitude) {
+                            const pt = [s.station_latitude, s.station_longitude];
+                            latlngs.push(pt);
+                            L.marker(pt, { icon: stationIcon })
+                                .addTo(map)
+                                .bindPopup("<b>Stop #" + (idx + 1) + ": " + s.station_english_name + "</b><br>ID: " + s.station_id);
+                        }
+                    });
+
+                    if (latlngs.length > 1) {
+                        // Draw route polyline connecting stations
+                        L.polyline(latlngs, { color: '#E11D48', weight: 4, opacity: 0.8 }).addTo(map);
+                        map.fitBounds(latlngs, { padding: [40, 40] });
+                    }
+                }
+            } catch (err) {
+                console.error("Error plotting route stations:", err);
+            }
+        }
+    });
+</script>

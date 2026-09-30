@@ -1,41 +1,47 @@
-    // Leaflet Map 
-    const key = 'DPeytGXTs5DU9As7z62J';
+// Leaflet Map Initialization centered on Kathmandu Valley
+const key = 'DPeytGXTs5DU9As7z62J';
 
-    const map = L.map('map').setView([27.6938263, 85.3213987], 15);
+// Default center: Kathmandu, Nepal
+const map = L.map('map').setView([27.700769, 85.300140], 13);
 
-    const mtLayer = L.maptilerLayer({
+// Base tile layer with MapTiler and OpenStreetMap fallback
+try {
+  L.maptilerLayer({
     apiKey: key,
-    style: "f333b8a3-3867-44c9-8695-f2d1dd7f5dea", //optional
-    }).addTo(map); 
+    style: "f333b8a3-3867-44c9-8695-f2d1dd7f5dea",
+  }).addTo(map);
+} catch (e) {
+  console.warn("MapTiler unavailable, falling back to OpenStreetMap tiles:", e);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+}
 
-    // const geocoderControl = L.control.maptilerGeocoding({
-    //     apiKey: key,
-    //     country: 'Nepal'
-    // }).addTo(map);
+// Safely attach search input if element exists in the template
+document.addEventListener('DOMContentLoaded', function () {
+  const searchInput = document.getElementById('search-input');
+  if (searchInput && typeof GraphHopper !== 'undefined') {
+    try {
+      const ghGeocoding = new GraphHopper.Geocoding({
+        key: '8e95a1e4-6d07-488c-8f23-d95874da0c18',
+      });
 
+      searchInput.addEventListener('input', function (event) {
+        const query = event.target.value.trim();
+        ghGeocoding.clear();
 
-    // Set up GraphHopper
-    const ghGeocoding = new GraphHopper.Geocoding({
-            key: '8e95a1e4-6d07-488c-8f23-d95874da0c18',
-        });
-
-        document.getElementById('search-input').addEventListener('input', function (event) {
-            const query = event.target.value;
-
-            // Clear previous results
-            ghGeocoding.clear();
-
-            if (query.length >= 3) {
-                // Perform geocoding
-                ghGeocoding.geocode(query, function (result) {
-                    if (result && result.hits && result.hits.length > 0) {
-                        const location = result.hits[0].point;
-                        map.setView([location.lat, location.lng], 13);
-                    }
-                });
+        if (query.length >= 3) {
+          ghGeocoding.geocode(query, function (result) {
+            if (result && result.hits && result.hits.length > 0) {
+              const location = result.hits[0].point;
+              map.setView([location.lat, location.lng], 14);
             }
-        });
-
-
-
-        
+          });
+        }
+      });
+    } catch (err) {
+      console.warn('Geocoding setup skipped:', err);
+    }
+  }
+});
