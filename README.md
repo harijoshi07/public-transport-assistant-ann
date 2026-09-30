@@ -39,10 +39,10 @@ The system couples **embedded IoT hardware** (Arduino Mega, u-blox NEO-6M GPS, S
                                              ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                  DJANGO BACKEND APPLICATION                 │
-│   • Hardware_APP  : Ingestion endpoint from telemetry       │
-│   • RoutePlot_APP : Graphhopper routing & geodesic geocoding│
-│   • ETA_APP / ML  : Feedforward Dense ANN for arrival times │
-│   • API_CONSUMER  : Django Channels (WebSockets broadcaster)│
+│   • hardware_app  : Ingestion endpoint from telemetry       │
+│   • routeplot_app : Graphhopper routing & geodesic geocoding│
+│   • ml / eta_app  : Feedforward Dense ANN for arrival times │
+│   • api_consumer  : Django Channels (WebSockets broadcaster)│
 └──────────────────────────────┬──────────────────────────────┘
                                │ WebSocket (Bidirectional, Live Push)
                                ▼
@@ -67,11 +67,11 @@ public-transport-assistant-ann/
 │   └── PINOUT.md               # Hardware wiring & pin configuration tables
 ├── backend/                    # Django 4.0 REST Framework & WebSockets server
 │   ├── manage.py               # Django management CLI
-│   ├── PROJECT_MAP_API/        # Project settings, ASGI/WSGI, routing configs
-│   ├── RoutePlot_APP/          # Routes, stations, fare algorithms, management seeders
-│   ├── Hardware_APP/           # Direct GPS ingestion API endpoints
-│   ├── API_CONSUMER/           # Asynchronous Channels WebSockets consumers
-│   ├── Data/                   # Seed CSV datasets for Kathmandu transit network
+│   ├── project_map_api/        # Project settings, ASGI/WSGI, routing configs
+│   ├── routeplot_app/          # Routes, stations, fare algorithms, management seeders
+│   ├── hardware_app/           # Direct GPS ingestion API endpoints
+│   ├── api_consumer/           # Asynchronous Channels WebSockets consumers
+│   ├── data/                   # Seed CSV datasets for Kathmandu transit network
 │   ├── templates/              # Jinja2 / HTML templates for Leaflet map interface
 │   ├── static/                 # Stylesheets, JavaScript, and custom map icons
 │   └── geoJson_converter/      # GeoJSON converters for spatial corridor networks

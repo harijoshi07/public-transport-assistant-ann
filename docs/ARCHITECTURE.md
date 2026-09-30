@@ -35,18 +35,18 @@ The **Public Transportation Assistance System** is an end-to-end cyber-physical 
 │                  DJANGO BACKEND APPLICATION                 │
 │                                                             │
 │   ┌─────────────────────────────────────────────────────┐   │
-│   │   Hardware_APP: GPS Ingestion Endpoint              │   │
+│   │   hardware_app: GPS Ingestion Endpoint              │   │
 │   ├─────────────────────────────────────────────────────┤   │
-│   │   RoutePlot_APP: Routing, Geocoding, & Fares        │   │
+│   │   routeplot_app: Routing, Geocoding, & Fares        │   │
 │   │   • Nominatim Geocoding API                         │   │
 │   │   • Graphhopper Road Network Topology               │   │
 │   │   • Distance-based fare calculation                 │   │
 │   ├─────────────────────────────────────────────────────┤   │
-│   │   ETA_APP / ML Module                               │   │
+│   │   ml / eta_app: ETA Prediction Module               │   │
 │   │   • 3-Layer Dense Feedforward Neural Network        │   │
 │   │   • Evaluates real-time traffic delay & arrival ETA │   │
 │   ├─────────────────────────────────────────────────────┤   │
-│   │   API_CONSUMER: Django Channels (WebSockets)        │   │
+│   │   api_consumer: Django Channels (WebSockets)        │   │
 │   │   • Asynchronous WebSocket event broadcaster        │   │
 │   └──────────────────────────┬──────────────────────────┘   │
 └──────────────────────────────┼──────────────────────────────┘
