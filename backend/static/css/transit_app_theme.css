@@ -1,44 +1,26 @@
 /* ==========================================================================
-   TRANSIT APP DESIGN SYSTEM — https://transitapp.com/ inspired UI
-   Kathmandu Real-Time Public Transport Intelligence
+   TRANSIT APP WEB PLANNER THEME — EXACT REPLICA OF https://transitapp.com/
+   Matches Official Web Navigation Interface for Kathmandu, Nepal
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
 :root {
-  /* Transit App Signature Palette */
-  --t-green: #00D2A0;
-  --t-green-dark: #00A880;
-  --t-green-glow: rgba(0, 210, 160, 0.35);
-  
-  --t-dark-bg: #0C101A;
-  --t-card: #151C2C;
-  --t-card-hover: #1C263B;
-  --t-card-active: #243048;
-  --t-border: rgba(255, 255, 255, 0.09);
-  --t-border-strong: rgba(255, 255, 255, 0.16);
-  
-  --t-text-white: #F8FAFC;
-  --t-text-body: #CBD5E1;
-  --t-text-muted: #8492A6;
-  --t-text-dim: #546274;
+  /* Official Transit App Green */
+  --transit-green: #00B377;
+  --transit-green-pill: #007D54;
+  --transit-green-dark: #006644;
+  --transit-green-glow: rgba(0, 179, 119, 0.35);
 
-  /* Vibrant Transit Route Accents */
-  --route-teal: #00D2A0;
-  --route-blue: #2979FF;
-  --route-purple: #7C4DFF;
-  --route-orange: #FF6D00;
-  --route-pink: #FF1744;
-  --route-cyan: #00E5FF;
-  --route-yellow: #FFD600;
-  --route-emerald: #00C853;
+  --sidebar-w: 380px;
+  --bg-app: #FFFFFF;
+  --border-light: #E5E7EB;
+  --border-subtle: #F3F4F6;
 
-  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 25px rgba(0, 210, 160, 0.25);
-  --radius-lg: 20px;
-  --radius-md: 14px;
-  --radius-sm: 8px;
-  --radius-pill: 9999px;
+  --text-dark: #111827;
+  --text-muted: #6B7280;
+  --text-light: #9CA3AF;
+  --text-white: #FFFFFF;
 
   --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -55,1046 +37,447 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: var(--font-main);
-  background-color: var(--t-dark-bg);
-  color: var(--t-text-white);
+  background-color: #FFFFFF;
+  color: var(--text-dark);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ─── Full Viewport Canvas ─── */
-.transit-viewport {
-  position: relative;
+/* ─── App Viewport ─── */
+.transit-web-app {
+  display: flex;
   width: 100vw;
   height: 100vh;
+  position: relative;
   overflow: hidden;
 }
 
+/* ─── Map Canvas (Occupies space to the right of sidebar) ─── */
 #map {
-  width: 100%;
-  height: 100%;
   position: absolute;
   top: 0;
-  left: 0;
+  bottom: 0;
+  left: var(--sidebar-w);
+  right: 0;
+  height: 100%;
   z-index: 1;
 }
 
-/* ─── Map Controls Top-Right (Layers / Locate) ─── */
-.map-floating-controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+/* ─── Transit App Left Sidebar (Full Height 380px) ─── */
+.transit-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: #FFFFFF;
+  border-right: 1px solid var(--border-light);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06);
   z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.map-control-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--t-card);
-  border: 1px solid var(--t-border);
-  color: var(--t-text-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-card);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.map-control-btn:hover {
-  background: var(--t-green);
-  color: #000000;
-  transform: scale(1.06);
-  border-color: var(--t-green);
-  box-shadow: var(--shadow-glow);
-}
-
-/* ─── Floating Transit App Drawer (Desktop / Left Dock) ─── */
-.transit-drawer {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 440px;
-  max-width: calc(100vw - 40px);
-  max-height: calc(100vh - 40px);
-  z-index: 1000;
-  background: rgba(13, 17, 26, 0.95);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ─── Brand Bar ─── */
-.transit-brand-bar {
-  padding: 16px 20px 14px;
+/* ─── Top Green Header Block ─── */
+.transit-header-green {
+  background: var(--transit-green);
+  padding: 16px 18px 18px;
+  color: #FFFFFF;
+}
+
+/* Logo Row */
+.transit-logo-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--t-border);
+  margin-bottom: 14px;
 }
 
-.brand-left {
+.transit-logo-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  text-decoration: none;
 }
 
-.transit-app-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--t-green);
+.transit-logo-svg {
+  width: 30px;
+  height: 30px;
+  background: #FFFFFF;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000000;
-  box-shadow: 0 4px 14px var(--t-green-glow);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
-.brand-title {
-  font-size: 17px;
+.transit-wordmark {
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--t-text-white);
-  line-height: 1.15;
+  color: #FFFFFF;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
-.brand-subtitle {
-  font-size: 11px;
-  color: var(--t-text-muted);
-  font-weight: 600;
+/* ─── Search Inputs Inside Green Block ─── */
+.search-inputs-container {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 2px;
+  gap: 8px;
 }
 
-.live-beacon-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--t-green);
-  box-shadow: 0 0 8px var(--t-green);
-  animation: pulse-beacon 2s infinite;
-}
-
-@keyframes pulse-beacon {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 210, 160, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 7px rgba(0, 210, 160, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 210, 160, 0); }
-}
-
-/* ─── Navigation Pills ─── */
-.transit-tabs {
-  display: flex;
-  padding: 8px 14px;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.25);
-  border-bottom: 1px solid var(--t-border);
-}
-
-.transit-tab-btn {
-  flex: 1;
-  padding: 8px 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--t-text-muted);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.15s ease;
-}
-
-.transit-tab-btn:hover {
-  color: var(--t-text-white);
-}
-
-.transit-tab-btn.active {
-  background: var(--t-card);
-  color: var(--t-green);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--t-border);
-}
-
-/* ─── Drawer Scroll Body ─── */
-.transit-body {
-  padding: 18px 20px 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* ─── Search Capsule: "Where to?" ─── */
-.search-capsule-wrap {
-  background: var(--t-card);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
+.search-pills-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  position: relative;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  gap: 8px;
+  flex: 1;
 }
 
-.search-capsule-wrap:focus-within {
-  border-color: var(--t-green);
-  box-shadow: 0 0 15px var(--t-green-glow);
-}
-
-.search-input-row {
+.search-pill-box {
+  background: var(--transit-green-pill);
+  border-radius: 999px;
+  padding: 6px 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  transition: background 0.15s, box-shadow 0.15s;
 }
 
-.search-pin {
-  width: 10px;
-  height: 10px;
+.search-pill-box:focus-within {
+  background: var(--transit-green-dark);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.pill-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+  background: #FFFFFF;
   flex-shrink: 0;
 }
 
-.pin-origin {
-  background: var(--t-green);
-  box-shadow: 0 0 8px var(--t-green);
-}
-
-.pin-dest {
-  background: var(--route-pink);
-  box-shadow: 0 0 8px var(--route-pink);
-}
-
-.search-field {
-  width: 100%;
-  border: none;
+.pill-input {
   background: transparent;
+  border: none;
   font-family: var(--font-main);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--t-text-white);
+  color: #FFFFFF;
   outline: none;
+  width: 100%;
 }
 
-.search-field::placeholder {
-  color: var(--t-text-dim);
+.pill-input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
   font-weight: 500;
 }
 
-.search-divider {
-  height: 1px;
-  background: var(--t-border);
-  margin-left: 22px;
+.btn-clear-x {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  color: #FFFFFF;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s;
 }
 
-.btn-swap {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
+.btn-clear-x:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* Swap Button on Right of Inputs */
+.btn-swap-vertical {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--t-card-hover);
-  border: 1px solid var(--t-border);
-  color: var(--t-text-muted);
+  background: var(--transit-green-pill);
+  border: none;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
-.btn-swap:hover {
-  color: var(--t-green);
-  border-color: var(--t-green);
-  transform: translateY(-50%) rotate(180deg);
+.btn-swap-vertical:hover {
+  background: var(--transit-green-dark);
+  transform: rotate(180deg);
 }
 
-/* ─── Modern Inline Suggestions (Google Maps / Uber / Transit App Style) ─── */
-.search-suggestions-container {
-  margin-top: 12px;
-  background: var(--t-card);
-  border: 1px solid var(--t-border-strong);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  animation: slide-down-fade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slide-down-fade {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.suggestions-header {
-  padding: 10px 14px 8px;
-  border-bottom: 1px solid var(--t-border);
+/* ─── Controls Bar Below Green Header ─── */
+.transit-controls-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border-light);
+  background: #FFFFFF;
 }
 
-.suggestions-header span {
+.btn-leave-now {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: var(--font-main);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-leave-now:hover {
+  background: #F9FAFB;
+}
+
+.controls-right-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-icon-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.control-icon-btn:hover {
+  background: #F9FAFB;
+  color: var(--transit-green);
+}
+
+/* ─── Search Results: "PLACES" Section ─── */
+.places-section-header {
+  padding: 14px 18px 6px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--t-text-muted);
+  color: var(--text-light);
 }
 
-.suggestions-header button {
-  background: transparent;
-  border: none;
-  color: var(--t-text-dim);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
-}
-
-.suggestions-header button:hover {
-  color: var(--t-text-white);
-}
-
-.suggestions-list {
-  max-height: 250px;
+.places-scroll-container {
   overflow-y: auto;
-  list-style: none;
-  padding: 4px 0;
-}
-
-.suggestion-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 16px;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.suggestion-row:last-child {
-  border-bottom: none;
-}
-
-.suggestion-row:hover, .suggestion-row.selected {
-  background: var(--t-card-hover);
-  padding-left: 20px;
-}
-
-.suggestion-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(0, 210, 160, 0.12);
-  color: var(--t-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.suggestion-info {
   flex: 1;
-  min-width: 0;
 }
 
-.suggestion-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--t-text-white);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color 0.12s;
-}
-
-.suggestion-row:hover .suggestion-name {
-  color: var(--t-green);
-}
-
-.suggestion-sub {
-  font-size: 11px;
-  color: var(--t-text-muted);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.suggestion-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--t-text-muted);
-  padding: 2px 7px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-/* ─── Transit App "GO" Button ─── */
-.btn-go {
-  width: 100%;
-  padding: 14px 20px;
-  background: var(--t-green);
-  color: #000000;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 14px;
-  box-shadow: 0 6px 20px var(--t-green-glow);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-go:hover {
-  background: #00e8b2;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(0, 210, 160, 0.5);
-}
-
-/* Quick Hubs */
-.quick-hubs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 14px;
-}
-
-.quick-hubs-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--t-text-dim);
-  width: 100%;
-  margin-bottom: 2px;
-  letter-spacing: 0.05em;
-}
-
-.hub-chip {
-  background: var(--t-card);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-pill);
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--t-text-body);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.hub-chip:hover {
-  background: var(--t-card-hover);
-  border-color: var(--t-green);
-  color: var(--t-green);
-}
-
-/* ─── Transit App Nearby Lines Live Cards ─── */
-.transit-line-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--t-card);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.transit-line-card:hover {
-  background: var(--t-card-hover);
-  border-color: var(--t-border-strong);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-card);
-}
-
-.line-left-content {
+.place-item-row {
   display: flex;
   align-items: center;
   gap: 14px;
+  padding: 12px 18px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.1s ease;
+  user-select: none;
+}
+
+.place-item-row:hover, .place-item-row.selected {
+  background: #F8FAFC;
+}
+
+/* Solid Black Location Pin Icon with White Dot in Center */
+.place-pin-svg {
+  width: 18px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.place-text-col {
   flex: 1;
   min-width: 0;
 }
 
-/* Big Colorful Transit App Route Badge */
-.route-badge {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 800;
-  color: #000000;
-  padding: 8px 12px;
-  border-radius: 8px;
-  min-width: 48px;
-  text-align: center;
-  flex-shrink: 0;
-  letter-spacing: -0.02em;
-}
-
-.line-info {
-  min-width: 0;
-}
-
-.line-name {
+.place-primary-name {
   font-size: 14px;
   font-weight: 700;
-  color: var(--t-text-white);
+  color: var(--text-dark);
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.line-via {
-  font-size: 11px;
-  color: var(--t-text-muted);
-  margin-top: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.line-countdown-wrap {
-  text-align: right;
-  flex-shrink: 0;
-  padding-left: 12px;
-}
-
-.live-countdown {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--t-green);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  justify-content: flex-end;
-}
-
-.live-wave-icon {
-  animation: radar-wave 1.5s ease-out infinite;
-}
-
-@keyframes radar-wave {
-  0% { opacity: 0.3; }
-  50% { opacity: 1; }
-  100% { opacity: 0.3; }
-}
-
-.next-departure {
-  font-size: 11px;
-  color: var(--t-text-dim);
-  font-weight: 600;
+.place-secondary-address {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.35;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ─── Transit App "GO" Journey Mode (Trip Result) ─── */
-.go-journey-container {
-  margin-top: 18px;
-  background: var(--t-card);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-md);
+/* ─── Journey Itinerary Result Drawer (When trip is planned) ─── */
+.itinerary-drawer-content {
   padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: var(--shadow-card);
 }
 
-.go-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--t-border);
-  padding-bottom: 14px;
+.itinerary-hero-card {
+  background: #F8FAFC;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
-.go-header-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--t-text-white);
+.itinerary-step {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.go-fare-chip {
-  background: rgba(0, 210, 160, 0.15);
-  color: var(--t-green);
-  border: 1px solid rgba(0, 210, 160, 0.3);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-}
-
-/* Subway Timeline Steps */
-.go-step {
-  display: flex;
-  gap: 14px;
+  gap: 12px;
+  margin-bottom: 14px;
   position: relative;
 }
 
-.go-step::before {
+.itinerary-step::before {
   content: '';
   position: absolute;
-  left: 10px;
-  top: 24px;
-  bottom: -16px;
+  left: 9px;
+  top: 20px;
+  bottom: -14px;
   width: 2px;
-  background: var(--t-border-strong);
+  background: #CBD5E1;
 }
 
-.go-step:last-child::before {
+.itinerary-step:last-child::before {
   display: none;
 }
 
-.step-node {
-  width: 22px;
-  height: 22px;
+.itinerary-node {
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 11px;
+  z-index: 2;
   flex-shrink: 0;
-  z-index: 2;
-  font-size: 11px;
 }
 
-.node-origin {
-  background: var(--t-green);
-  color: #000;
-}
-
-.node-ride {
-  background: var(--route-blue);
-  color: #fff;
-}
-
-.node-dest {
-  background: var(--route-pink);
-  color: #fff;
-}
-
-.step-content h4 {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--t-text-white);
-  line-height: 1.3;
-}
-
-.step-content p {
-  font-size: 12px;
-  color: var(--t-text-muted);
-  line-height: 1.4;
-  margin-top: 3px;
-}
-
-.step-ride-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(41, 121, 255, 0.15);
-  color: #60A5FA;
-  border: 1px solid rgba(41, 121, 255, 0.3);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  margin-top: 8px;
-}
-
-/* Trip Summary Grid */
-.go-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  text-align: center;
-}
-
-.go-stat-item span {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--t-text-dim);
-  letter-spacing: 0.05em;
-}
-
-.go-stat-item strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--t-text-white);
-  margin-top: 3px;
-  font-family: var(--font-mono);
-}
-
-/* ─── Live Telemetry Simulator Panel ─── */
-.simulator-panel {
-  background: var(--t-card);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-md);
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.sim-telemetry-box {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.sim-btn-play {
-  width: 100%;
-  padding: 12px;
-  background: var(--t-green);
-  color: #000;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.15s;
-}
-
-.sim-btn-play:hover {
-  background: #00e8b2;
-}
-
-.sim-btn-pause {
-  background: var(--route-pink);
-  color: #fff;
-}
-
-/* ─── AI Model Interactive Playground ─── */
-.ai-playground-card {
-  background: var(--t-card);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-md);
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: var(--shadow-card);
-}
-
-.ai-slider-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.ai-slider-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--t-text-body);
-}
-
-.ai-slider-header strong {
-  font-family: var(--font-mono);
-  color: var(--t-green);
-}
-
-.ai-slider {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.15);
-  outline: none;
-  cursor: pointer;
-}
-
-.ai-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--t-green);
-  box-shadow: 0 0 10px var(--t-green);
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-
-.ai-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
-.ai-traffic-toggle-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.ai-toggle-btn {
-  flex: 1;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--t-border);
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--t-text-muted);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.ai-toggle-btn.active {
-  background: var(--t-green);
-  color: #000000;
-  border-color: var(--t-green);
-  box-shadow: 0 2px 10px var(--t-green-glow);
-}
-
-.ai-prediction-display {
-  background: linear-gradient(135deg, rgba(0, 210, 160, 0.12) 0%, rgba(41, 121, 255, 0.12) 100%);
-  border: 1px solid rgba(0, 210, 160, 0.3);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  text-align: center;
-}
-
-.ai-pred-time {
-  font-family: var(--font-mono);
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--t-green);
-  line-height: 1.1;
-  margin-top: 4px;
-}
-
-.ai-comparison-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* ─── Leaflet Metro Corridors & Markers ─── */
-.leaflet-container {
-  font-family: var(--font-main) !important;
-}
-
-/* Custom SVG DivIcon Pins */
-.custom-pin {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  pointer-events: auto;
-}
-
-.pin-label {
-  font-family: var(--font-main);
-  font-size: 11px;
-  font-weight: 700;
+.itinerary-node.node-walk {
+  background: #64748B;
   color: #FFFFFF;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(8px);
-  padding: 3px 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  white-space: nowrap;
-  margin-top: 4px;
 }
 
-/* Origin Beacon */
-.origin-pin .pin-core {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #10B981;
-  border: 3.5px solid #FFFFFF;
-  box-shadow: 0 3px 12px rgba(16, 185, 129, 0.6);
-  position: relative;
-  z-index: 2;
+.itinerary-node.node-bus {
+  background: #00B377;
+  color: #FFFFFF;
 }
 
-.origin-pin .pin-pulse {
-  position: absolute;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(16, 185, 129, 0.4);
-  animation: pin-pulse 2s infinite;
-  z-index: 1;
+.itinerary-node.node-dest {
+  background: #E11D48;
+  color: #FFFFFF;
 }
 
-@keyframes pin-pulse {
-  0% { transform: scale(0.6); opacity: 0.8; }
-  100% { transform: scale(1.6); opacity: 0; }
-}
-
-/* Destination Teardrop */
-.dest-pin .pin-head {
-  filter: drop-shadow(0 4px 10px rgba(225, 29, 72, 0.5));
-  z-index: 2;
-}
-
-/* Station Nodes */
-.station-node-pin {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #FFFFFF;
-  border: 3.5px solid #2563EB;
-  color: #2563EB;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s;
-  position: relative;
-}
-
-.station-node-pin:hover {
-  transform: scale(1.35);
-  border-color: #00D2A0;
-  color: #00D2A0;
-  z-index: 1000 !important;
-}
-
-.station-node-tooltip {
-  position: absolute;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.95);
-  color: #F8FAFC;
-  font-family: var(--font-main);
-  font-size: 11px;
+.itinerary-step-body h4 {
+  font-size: 13.5px;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  color: var(--text-dark);
 }
 
-.station-node-pin:hover .station-node-tooltip {
-  opacity: 1;
+.itinerary-step-body p {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
-/* Glowing Pulsing Vehicle Avatar */
-.live-bus-marker-wrapper {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ─── Sidebar Footer ─── */
+.transit-sidebar-footer {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: auto;
 }
 
-.live-bus-pulse-ring {
+.transit-sidebar-footer a {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+/* ─── Map Bottom-Right Floating Elements ─── */
+.map-bottom-banner {
   position: absolute;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--t-green);
-  opacity: 0.4;
-  animation: bus-radar 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  bottom: 24px;
+  right: 24px;
+  background: #008A5B;
+  color: #FFFFFF;
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.live-bus-icon-circle {
-  position: relative;
-  width: 32px;
-  height: 32px;
+.map-bottom-banner button {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+/* Dark Mode Compass Circle */
+.map-compass-btn {
+  position: absolute;
+  bottom: 90px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #00D2A0;
-  color: #000000;
+  background: #111827;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(0, 210, 160, 0.5);
-  border: 2.5px solid #FFFFFF;
-  z-index: 2;
-}
-
-@keyframes bus-radar {
-  0% { transform: scale(0.6); opacity: 0.8; }
-  100% { transform: scale(1.6); opacity: 0; }
-}
-
-/* Dark Mode Leaflet Popup Overrides */
-.leaflet-popup-content-wrapper {
-  background: var(--t-card) !important;
-  color: var(--t-text-white) !important;
-  border: 1px solid var(--t-border) !important;
-  border-radius: 12px !important;
-  box-shadow: var(--shadow-card) !important;
-  padding: 6px 10px !important;
-}
-
-.leaflet-popup-tip {
-  background: var(--t-card) !important;
-}
-
-.leaflet-routing-container {
-  display: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 1000;
 }
 
 /* ─── Mobile Responsiveness ─── */
 @media (max-width: 768px) {
-  .transit-drawer {
+  #map {
+    left: 0;
+  }
+  .transit-sidebar {
+    width: 100vw;
+    height: 60vh;
     top: auto;
     bottom: 0;
-    left: 0;
-    width: 100vw;
-    max-width: 100vw;
-    border-radius: 24px 24px 0 0;
-    max-height: 72vh;
+    border-radius: 20px 20px 0 0;
+  }
+  .map-bottom-banner {
+    display: none;
   }
 }

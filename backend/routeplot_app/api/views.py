@@ -15,29 +15,56 @@ from geopy.distance import geodesic
 #----------------------------------------------------------#
 
 def search_stations_autocomplete(request):
-    """Fast autocomplete endpoint for transit stops and landmarks."""
+    """Fast autocomplete endpoint for transit stops and landmarks with Transit App subtitles."""
     query = request.GET.get('q', '').strip()
-    if len(query) < 2:
+    if len(query) < 1:
         return JsonResponse({'results': []})
 
+    results = []
+    seen = set()
+
+    # 1. Local Database of 6,582 Kathmandu stations
     stations = StationInfo.objects.filter(
         station_english_name__icontains=query
     ).exclude(station_english_name='Route Point').values(
-        'station_id', 'station_english_name', 'station_latitude', 'station_longitude'
-    )[:12]
+        'station_id', 'station_english_name', 'station_nepali_name', 'station_latitude', 'station_longitude'
+    )[:10]
 
-    results = []
-    seen_names = set()
     for s in stations:
         clean_name = s['station_english_name'].strip()
-        if clean_name and clean_name.lower() not in seen_names:
-            seen_names.add(clean_name.lower())
+        if clean_name.lower() not in seen:
+            seen.add(clean_name.lower())
+            nepali = (s.get('station_nepali_name') or '').strip()
+            sub = f"{nepali}, Kathmandu, Bagmati Province, Nepal" if nepali else "Kathmandu, Bagmati Province, Nepal"
             results.append({
                 'id': s['station_id'],
                 'name': clean_name,
+                'sub': sub,
                 'lat': s['station_latitude'],
                 'lng': s['station_longitude'],
             })
+
+    # 2. Additional OpenStreetMap landmarks in Kathmandu
+    if len(results) < 8:
+        try:
+            geolocator = Nominatim(user_agent="TransitAppKathmandu/2.0")
+            places = geolocator.geocode(f"{query}, Kathmandu, Nepal", exactly_one=False, limit=6, timeout=3)
+            for p in places or []:
+                parts = [x.strip() for x in p.address.split(',')]
+                p_name = parts[0]
+                p_sub = ", ".join(parts[1:4]) if len(parts) > 1 else "Kathmandu, Nepal"
+                if p_name.lower() not in seen:
+                    seen.add(p_name.lower())
+                    results.append({
+                        'id': 0,
+                        'name': p_name,
+                        'sub': p_sub,
+                        'lat': p.latitude,
+                        'lng': p.longitude,
+                    })
+        except Exception:
+            pass
+
     return JsonResponse({'results': results})
 
 
