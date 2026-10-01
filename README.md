@@ -7,6 +7,8 @@
 
 A Kathmandu transit map for planning a bus trip, browsing stored lines, and watching a bus move along that line. Travel time comes from a neural network trained on 2022–2023 GPS records. Built as a minor project at **Tribhuvan University, Institute of Engineering, Thapathali Campus**.
 
+[Report](https://drive.google.com/file/d/1OQ9E2Be1z1Rs9MlQo7qIhcqWz8Cyc8Of/view?usp=sharing) · [Demo](https://drive.google.com/file/d/1QK_E9o4nTWwKg8LO8D3vSZ7M-Gffb--v/view?usp=sharing)
+
 ![Kathmandu map with the trip search sidebar](docs/images/hero.png)
 
 ## What you can do
