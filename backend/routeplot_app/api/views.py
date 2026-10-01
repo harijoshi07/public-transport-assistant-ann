@@ -14,6 +14,33 @@ from geopy.distance import geodesic
  
 #----------------------------------------------------------#
 
+def search_stations_autocomplete(request):
+    """Fast autocomplete endpoint for transit stops and landmarks."""
+    query = request.GET.get('q', '').strip()
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+
+    stations = StationInfo.objects.filter(
+        station_english_name__icontains=query
+    ).exclude(station_english_name='Route Point').values(
+        'station_id', 'station_english_name', 'station_latitude', 'station_longitude'
+    )[:12]
+
+    results = []
+    seen_names = set()
+    for s in stations:
+        clean_name = s['station_english_name'].strip()
+        if clean_name and clean_name.lower() not in seen_names:
+            seen_names.add(clean_name.lower())
+            results.append({
+                'id': s['station_id'],
+                'name': clean_name,
+                'lat': s['station_latitude'],
+                'lng': s['station_longitude'],
+            })
+    return JsonResponse({'results': results})
+
+
 def nearest_station_info(request, userlocation, destlocation):
     """Geocodes origin and destination, identifies nearest transit stops, and computes fares."""
     geolocator = Nominatim(user_agent="PublicTransportAssistant/1.0")

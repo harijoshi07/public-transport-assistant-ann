@@ -3,11 +3,12 @@ from routeplot_app.api.views import (StationInfoListAV, StationInfoDetailAV,
                                      RouteInfoListAV, RouteInfoDetailAV,
                                      RouteStationInfoDetailAV,
                                      RouteStationInfoList1, RouteStationInfoList2, RouteStationInfoList3,
-                                     nearest_station_info)
+                                     nearest_station_info, search_stations_autocomplete)
 
  
 urlpatterns = [
 
+    path('search-stations/', search_stations_autocomplete, name='search-stations-autocomplete'),
     path('get-complete-stationinfo/', StationInfoListAV.as_view(), name='station-list'),
     path('get-particular-stationinfo/<int:pk>/', StationInfoDetailAV.as_view(), name='station-detail'),
 
