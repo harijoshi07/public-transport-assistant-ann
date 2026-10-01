@@ -45,8 +45,8 @@ const maptilerDark = L.tileLayer(
 );
 
 // ── Theme State Management with LocalStorage Persistence ──
-// Default to dark theme unless previously set to light
-let currentTheme = localStorage.getItem('transit_app_theme') || 'dark';
+// Default to light theme (matching the Transit App daylight screenshot)
+let currentTheme = localStorage.getItem('transit_app_theme') || 'light';
 let isDarkMap = (currentTheme === 'dark');
 window.isDarkMap = isDarkMap;
 
@@ -103,5 +103,10 @@ function resetMapCenter() {
   map.flyTo(KTM_CENTER, DEFAULT_ZOOM, { duration: 1.2 });
 }
 
-// Ensure theme icon reflects saved theme on load
-document.addEventListener('DOMContentLoaded', updateThemeUI);
+// Ensure theme icon reflects saved theme on load and recalculate map viewport
+document.addEventListener('DOMContentLoaded', function() {
+  updateThemeUI();
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 100);
+});

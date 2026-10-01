@@ -166,26 +166,28 @@
         </footer>
     </aside>
 
-    <!-- Map Canvas (Occupies entire screen to the right) -->
-    <div id="map"></div>
+    <!-- Map Canvas Wrapper (Occupies entire screen to the right) -->
+    <div class="map-canvas-wrapper">
+        <div id="map"></div>
 
-    <!-- Floating Compass Button (matching bottom-right of screenshot) -->
-    <button type="button" class="map-compass-btn" onclick="resetMapCenter()" title="Recenter Map">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-        </svg>
-    </button>
+        <!-- Floating Compass Button (matching bottom-right of screenshot) -->
+        <button type="button" class="map-compass-btn" onclick="resetMapCenter()" title="Recenter Map">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+            </svg>
+        </button>
 
-    <!-- Floating Phone Banner (matching bottom-right of screenshot) -->
-    <div class="map-bottom-banner" id="bottomBanner">
-        <div style="width: 24px; height: 24px; border-radius: 6px; background: #FFFFFF; display: flex; align-items: center; justify-content: center;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 18L12 6L18 18" stroke="#008A5B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <!-- Floating Phone Banner (matching bottom-right of screenshot) -->
+        <div class="map-bottom-banner" id="bottomBanner">
+            <div style="width: 24px; height: 24px; border-radius: 6px; background: #FFFFFF; display: flex; align-items: center; justify-content: center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 18L12 6L18 18" stroke="#008A5B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+                <div style="font-size: 11px; opacity: 0.9;">Want to plan trips on the go?</div>
+                <div style="font-size: 13px; font-weight: 800;">Get Transit on your phone</div>
+            </div>
+            <button type="button" onclick="document.getElementById('bottomBanner').style.display='none'">&times;</button>
         </div>
-        <div>
-            <div style="font-size: 11px; opacity: 0.9;">Want to plan trips on the go?</div>
-            <div style="font-size: 13px; font-weight: 800;">Get Transit on your phone</div>
-        </div>
-        <button type="button" onclick="document.getElementById('bottomBanner').style.display='none'">&times;</button>
     </div>
 </div>
 
