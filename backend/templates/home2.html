@@ -31,14 +31,14 @@
         <!-- Brand Header with Back Action -->
         <div class="transit-brand-bar">
             <div class="brand-left">
-                <a href="/" class="map-control-btn" style="width: 34px; height: 34px; text-decoration: none;" title="Back to Route Planner">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <a href="/" class="map-control-btn" style="width: 36px; height: 36px; text-decoration: none;" title="Back to Route Planner">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
                 </a>
                 <div style="min-width: 0;">
-                    <div class="brand-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;">
+                    <div class="brand-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 310px;">
                         {{ current_route.route_english_name|default:"Transit Corridor" }}
                     </div>
                     <div class="brand-subtitle">
@@ -49,32 +49,32 @@
         </div>
 
         <!-- Sequential Stations Subway List -->
-        <div class="transit-body" style="padding: 16px 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                <span style="font-size: 13px; font-weight: 800; color: var(--t-text-white); text-transform: uppercase; letter-spacing: 0.04em;">
-                    Sequential Stops
+        <div class="transit-body" style="padding: 18px 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <span style="font-size: 13px; font-weight: 800; color: var(--t-text-white); text-transform: uppercase; letter-spacing: 0.05em;">
+                    Sequential Stops ({{ stations_variable|length }})
                 </span>
                 <span style="font-family: var(--font-mono); font-size: 11px; background: rgba(0, 210, 160, 0.15); color: var(--t-green); padding: 3px 8px; border-radius: 999px;">
                     Active Corridor
                 </span>
             </div>
 
-            <div style="background: var(--t-card); border: 1px solid var(--t-border); border-radius: var(--radius-md); padding: 16px;">
+            <div style="background: var(--t-card); border: 1px solid var(--t-border); border-radius: var(--radius-md); padding: 18px;">
                 <ol style="padding: 0; margin: 0; list-style: none;">
                     {% for station in stations_variable %}
-                    <li style="display: flex; gap: 14px; margin-bottom: 14px; position: relative;">
+                    <li style="display: flex; gap: 14px; margin-bottom: 16px; position: relative;">
                         <!-- Subway Timeline Connecting Bar -->
                         <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                            <span style="width: 22px; height: 22px; border-radius: 50%; background: #00D2A0; color: #000000; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-mono); box-shadow: 0 0 10px rgba(0, 210, 160, 0.4); z-index: 2;">
+                            <span style="width: 24px; height: 24px; border-radius: 50%; background: #00D2A0; color: #000000; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-mono); box-shadow: 0 0 10px rgba(0, 210, 160, 0.4); z-index: 2;">
                                 {{ forloop.counter }}
                             </span>
                             {% if not forloop.last %}
-                            <div style="width: 2px; flex: 1; background: rgba(255, 255, 255, 0.12); margin-top: 4px; margin-bottom: -4px;"></div>
+                            <div style="width: 2px; flex: 1; background: rgba(255, 255, 255, 0.12); margin-top: 4px; margin-bottom: -6px;"></div>
                             {% endif %}
                         </div>
 
                         <!-- Station Info -->
-                        <div style="flex: 1; padding-bottom: 4px;">
+                        <div style="flex: 1; padding-bottom: 2px;">
                             <div style="font-size: 14px; font-weight: 700; color: var(--t-text-white); line-height: 1.3;">
                                 {{ station.station_english_name }}
                             </div>
@@ -108,19 +108,23 @@
                 if (Array.isArray(stations) && stations.length > 0) {
                     const latlngs = [];
 
-                    // Subway Station Dot Custom DivIcon
                     stations.forEach(function (s, idx) {
                         if (s.station_latitude && s.station_longitude) {
                             const pt = [s.station_latitude, s.station_longitude];
                             latlngs.push(pt);
 
-                            const stationDotHtml = `<div class="station-dot-marker" title="${s.station_english_name}"></div>`;
+                            const stationNodeHtml = `
+                                <div class="station-node-pin">
+                                    <span>${idx + 1}</span>
+                                    <div class="station-node-tooltip">${s.station_english_name}</div>
+                                </div>`;
+
                             const dotIcon = L.divIcon({
-                                html: stationDotHtml,
+                                html: stationNodeHtml,
                                 className: '',
-                                iconSize: [14, 14],
-                                iconAnchor: [7, 7],
-                                popupAnchor: [0, -10]
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10],
+                                popupAnchor: [0, -12]
                             });
 
                             L.marker(pt, { icon: dotIcon })
@@ -132,9 +136,22 @@
                     if (latlngs.length > 1) {
                         // Draw Transit App Signature Glowing Neon Metro Corridor
                         // Outer Glow Casing
-                        L.polyline(latlngs, { color: '#00D2A0', weight: 8, opacity: 0.35, lineCap: 'round', lineJoin: 'round' }).addTo(map);
-                        // Core Corridor Line
-                        L.polyline(latlngs, { color: '#00D2A0', weight: 4.5, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(map);
+                        L.polyline(latlngs, {
+                            color: '#00D2A0',
+                            weight: 12,
+                            opacity: 0.35,
+                            lineCap: 'round',
+                            lineJoin: 'round'
+                        }).addTo(map);
+
+                        // Core Metro Corridor Line
+                        L.polyline(latlngs, {
+                            color: '#00D2A0',
+                            weight: 5,
+                            opacity: 1,
+                            lineCap: 'round',
+                            lineJoin: 'round'
+                        }).addTo(map);
 
                         map.fitBounds(latlngs, { padding: [60, 60] });
                     }

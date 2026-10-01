@@ -1,57 +1,74 @@
 // ==========================================================================
-// Map Initialization — CartoDB Voyager / Dark Matter (Transit App style)
+// Map Initialization — MapTiler High-DPI Retina Vector Styles
 // ==========================================================================
 
-// Kathmandu Valley Center Coordinates
+const MAPTILER_KEY = 'DPeytGXTs5DU9As7z62J';
 const KTM_CENTER = [27.700769, 85.300140];
 const DEFAULT_ZOOM = 13;
 
-// Initialize Leaflet Map
+// Initialize Leaflet Map with smooth zoom animations
 const map = L.map('map', {
   center: KTM_CENTER,
   zoom: DEFAULT_ZOOM,
-  zoomControl: false, // Repositioned cleanly
+  zoomControl: false,
+  fadeAnimation: true,
 });
 
-// Clean Top-Right Zoom Control
+// Reposition Zoom Control cleanly to bottom right
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// ── Tile Layers ──
-// CartoDB Voyager (Default crisp transit basemap)
-const voyagerLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  maxZoom: 19,
-  subdomains: 'abcd',
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-});
+// ── MapTiler High-DPI (@2x Retina) Tile Layers ──
+// 1. MapTiler Streets-v2 (Crisp, High-Detail Daylight Basemap)
+const maptilerStreets = L.tileLayer(
+  `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}@2x.png?key=${MAPTILER_KEY}`,
+  {
+    tileSize: 512,
+    zoomOffset: -1,
+    minZoom: 1,
+    maxZoom: 19,
+    attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+    crossOrigin: true,
+  }
+);
 
-// CartoDB Dark Matter (Night transit basemap)
-const darkMatterLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  maxZoom: 19,
-  subdomains: 'abcd',
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-});
+// 2. MapTiler Dataviz Dark (Sleek High-Contrast Night Basemap)
+const maptilerDark = L.tileLayer(
+  `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}@2x.png?key=${MAPTILER_KEY}`,
+  {
+    tileSize: 512,
+    zoomOffset: -1,
+    minZoom: 1,
+    maxZoom: 19,
+    attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>',
+    crossOrigin: true,
+  }
+);
 
-// Load Default Voyager Layer
-voyagerLayer.addTo(map);
+// Add Default MapTiler Streets Layer
+maptilerStreets.addTo(map);
 let isDarkMap = false;
 
-// Function to Toggle Map Theme (called from floating map controls)
+// Theme Toggle Function (flips between MapTiler Streets-v2 and Dataviz Dark)
 function toggleMapTheme() {
   const icon = document.getElementById('mapThemeIcon');
   if (isDarkMap) {
-    map.removeLayer(darkMatterLayer);
-    map.addLayer(voyagerLayer);
+    map.removeLayer(maptilerDark);
+    map.addLayer(maptilerStreets);
     isDarkMap = false;
-    if (icon) icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    if (icon) {
+      icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    }
   } else {
-    map.removeLayer(voyagerLayer);
-    map.addLayer(darkMatterLayer);
+    map.removeLayer(maptilerStreets);
+    map.addLayer(maptilerDark);
     isDarkMap = true;
-    if (icon) icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+    if (icon) {
+      icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+    }
   }
 }
 
-// Center to Kathmandu
+// Smooth Fly-to Kathmandu Center
 function resetMapCenter() {
   map.flyTo(KTM_CENTER, DEFAULT_ZOOM, { duration: 1.2 });
 }
