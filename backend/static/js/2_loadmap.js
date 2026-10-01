@@ -1,12 +1,12 @@
 // ==========================================================================
-// Map Initialization — MapTiler High-DPI Retina Vector Styles
+// Map Initialization — MapTiler High-DPI Retina Vector Styles + Theme Manager
 // ==========================================================================
 
 const MAPTILER_KEY = 'DPeytGXTs5DU9As7z62J';
 const KTM_CENTER = [27.700769, 85.300140];
 const DEFAULT_ZOOM = 13;
 
-// Initialize Leaflet Map with smooth zoom animations
+// Initialize Leaflet Map
 const map = L.map('map', {
   center: KTM_CENTER,
   zoom: DEFAULT_ZOOM,
@@ -17,8 +17,8 @@ const map = L.map('map', {
 // Reposition Zoom Control cleanly to bottom right
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// ── MapTiler High-DPI (@2x Retina) Tile Layers ──
-// 1. MapTiler Streets-v2 (Crisp, High-Detail Daylight Basemap)
+// ── MapTiler High-DPI (@2x Retina 512px) Tile Layers ──
+// 1. Daylight Basemap: MapTiler Streets-v2
 const maptilerStreets = L.tileLayer(
   `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}@2x.png?key=${MAPTILER_KEY}`,
   {
@@ -31,7 +31,7 @@ const maptilerStreets = L.tileLayer(
   }
 );
 
-// 2. MapTiler Dataviz Dark (Sleek High-Contrast Night Basemap)
+// 2. Night Basemap: MapTiler Dataviz Dark
 const maptilerDark = L.tileLayer(
   `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}@2x.png?key=${MAPTILER_KEY}`,
   {
@@ -44,31 +44,64 @@ const maptilerDark = L.tileLayer(
   }
 );
 
-// Add Default MapTiler Streets Layer
-maptilerStreets.addTo(map);
-let isDarkMap = false;
+// ── Theme State Management with LocalStorage Persistence ──
+// Default to dark theme unless previously set to light
+let currentTheme = localStorage.getItem('transit_app_theme') || 'dark';
+let isDarkMap = (currentTheme === 'dark');
+window.isDarkMap = isDarkMap;
 
-// Theme Toggle Function (flips between MapTiler Streets-v2 and Dataviz Dark)
-function toggleMapTheme() {
+// Add initial tile layer based on saved preference
+if (isDarkMap) {
+  maptilerDark.addTo(map);
+  document.documentElement.classList.add('dark-theme');
+} else {
+  maptilerStreets.addTo(map);
+  document.documentElement.classList.remove('dark-theme');
+}
+
+// Update Theme UI button icon (Sun in dark mode, Moon in light mode)
+function updateThemeUI() {
   const icon = document.getElementById('mapThemeIcon');
+  if (icon) {
+    if (isDarkMap) {
+      // Sun icon to switch to daylight
+      icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+    } else {
+      // Moon icon to switch to night mode
+      icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    }
+  }
+
+  // Notify active polylines if theme changed
+  if (typeof window.applyPolylineTheme === 'function') {
+    window.applyPolylineTheme(isDarkMap);
+  }
+}
+
+// Toggle Theme & Persist across all route views & page reloads
+function toggleMapTheme() {
   if (isDarkMap) {
     map.removeLayer(maptilerDark);
     map.addLayer(maptilerStreets);
     isDarkMap = false;
-    if (icon) {
-      icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-    }
+    window.isDarkMap = false;
+    localStorage.setItem('transit_app_theme', 'light');
+    document.documentElement.classList.remove('dark-theme');
   } else {
     map.removeLayer(maptilerStreets);
     map.addLayer(maptilerDark);
     isDarkMap = true;
-    if (icon) {
-      icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-    }
+    window.isDarkMap = true;
+    localStorage.setItem('transit_app_theme', 'dark');
+    document.documentElement.classList.add('dark-theme');
   }
+  updateThemeUI();
 }
 
-// Smooth Fly-to Kathmandu Center
+// Recenter Map on Kathmandu
 function resetMapCenter() {
   map.flyTo(KTM_CENTER, DEFAULT_ZOOM, { duration: 1.2 });
 }
+
+// Ensure theme icon reflects saved theme on load
+document.addEventListener('DOMContentLoaded', updateThemeUI);

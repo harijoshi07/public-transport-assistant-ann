@@ -65,7 +65,7 @@
                     <li style="display: flex; gap: 14px; margin-bottom: 16px; position: relative;">
                         <!-- Subway Timeline Connecting Bar -->
                         <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                            <span style="width: 24px; height: 24px; border-radius: 50%; background: #00D2A0; color: #000000; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-mono); box-shadow: 0 0 10px rgba(0, 210, 160, 0.4); z-index: 2;">
+                            <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--t-green); color: #000000; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-mono); box-shadow: 0 0 10px rgba(0, 210, 160, 0.4); z-index: 2;">
                                 {{ forloop.counter }}
                             </span>
                             {% if not forloop.last %}
@@ -100,6 +100,24 @@
 <script src="{% static 'js/3_myLocation.js' %}"></script>
 
 <script>
+    let activeCorridorCasing = null;
+    let activeCorridorCore = null;
+
+    // Dynamically update corridor line when theme toggles
+    window.applyPolylineTheme = function(isDark) {
+        if (activeCorridorCasing) {
+            activeCorridorCasing.setStyle({
+                color: isDark ? '#0A0E17' : '#FFFFFF',
+                opacity: isDark ? 0.9 : 0.95
+            });
+        }
+        if (activeCorridorCore) {
+            activeCorridorCore.setStyle({
+                color: isDark ? '#00D2A0' : '#1D4ED8'
+            });
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', function () {
         const stationsEl = document.getElementById('routeStationsJson');
         if (stationsEl && typeof map !== 'undefined') {
@@ -107,6 +125,7 @@
                 const stations = JSON.parse(stationsEl.textContent);
                 if (Array.isArray(stations) && stations.length > 0) {
                     const latlngs = [];
+                    const isDark = (localStorage.getItem('transit_app_theme') || 'dark') === 'dark';
 
                     stations.forEach(function (s, idx) {
                         if (s.station_latitude && s.station_longitude) {
@@ -134,21 +153,20 @@
                     });
 
                     if (latlngs.length > 1) {
-                        // Draw Transit App Signature Glowing Neon Metro Corridor
-                        // Outer Glow Casing
-                        L.polyline(latlngs, {
-                            color: '#00D2A0',
-                            weight: 12,
-                            opacity: 0.35,
+                        // 1. Contrast Casing Layer (Works cleanly on both light & dark maps)
+                        activeCorridorCasing = L.polyline(latlngs, {
+                            color: isDark ? '#0A0E17' : '#FFFFFF',
+                            weight: 8,
+                            opacity: isDark ? 0.9 : 0.95,
                             lineCap: 'round',
                             lineJoin: 'round'
                         }).addTo(map);
 
-                        // Core Metro Corridor Line
-                        L.polyline(latlngs, {
-                            color: '#00D2A0',
-                            weight: 5,
-                            opacity: 1,
+                        // 2. Core Metro Line (Teal in dark mode, Royal Blue in light mode)
+                        activeCorridorCore = L.polyline(latlngs, {
+                            color: isDark ? '#00D2A0' : '#1D4ED8',
+                            weight: 4.5,
+                            opacity: 1.0,
                             lineCap: 'round',
                             lineJoin: 'round'
                         }).addTo(map);
