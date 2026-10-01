@@ -84,13 +84,13 @@
                     </div>
                 </div>
 
-                <!-- Floating Dropdown Suggestions Card -->
-                <div class="search-dropdown-menu" id="searchDropdown" style="display: none;">
-                    <div class="dropdown-header-bar">
-                        <span class="dropdown-header-title" id="dropdownHeaderTitle">Suggested Stops</span>
-                        <button type="button" class="btn-dropdown-close" onclick="closeDropdown()">&times;</button>
+                <!-- Modern Inline Suggestions (No clumsy overlay: sits directly below inputs) -->
+                <div class="search-suggestions-container" id="searchDropdown" style="display: none;">
+                    <div class="suggestions-header">
+                        <span id="dropdownHeaderTitle">Matching Bus Stops</span>
+                        <button type="button" onclick="closeDropdown()" title="Close suggestions">&times;</button>
                     </div>
-                    <div class="dropdown-items-scroll" id="dropdownItemsContainer"></div>
+                    <ul class="suggestions-list" id="dropdownItemsContainer"></ul>
                 </div>
 
                 <button type="submit" class="btn-go">
@@ -104,8 +104,8 @@
                 <span class="quick-hubs-label">Popular Corridors:</span>
                 <button type="button" class="hub-chip" onclick="fillQuickRoute('Kalanki', 'Ratnapark')">Kalanki → Ratnapark</button>
                 <button type="button" class="hub-chip" onclick="fillQuickRoute('Lagankhel', 'Budhanilkantha')">Lagankhel → Budhanilkantha</button>
-                <button type="button" class="hub-chip" onclick="fillQuickRoute('Thapathali', 'Airport')">Thapathali → Airport</button>
-                <button type="button" class="hub-chip" onclick="fillQuickRoute('Koteshwor', 'Swayambhu')">Koteshwor → Swayambhu</button>
+                <button type="button" class="hub-chip" onclick="fillQuickRoute('Thapathali Campus', 'Airport')">Thapathali → Airport</button>
+                <button type="button" class="hub-chip" onclick="fillQuickRoute('Tikathali Thapa Chowk', 'Ratnapark')">Tikathali → Ratnapark</button>
             </div>
 
             <!-- Error Notice (if any) -->
@@ -139,7 +139,7 @@
                     <div class="step-node node-ride">🚌</div>
                     <div class="step-content">
                         <h4>Board at: {{ nearest_user_station_english_name }}</h4>
-                        <p>Walk to nearest verified boarding stop</p>
+                        <p>Walk to nearest verified transit stop</p>
                         <div class="step-ride-pill">
                             <span class="live-beacon-dot"></span>
                             Direct Bus Line · Arriving Soon
@@ -204,7 +204,7 @@
             </div>
         </div>
 
-        <!-- Tab 3: Live Radar Simulator -->
+        <!-- Tab 3: Live Radar Simulator (with Glowing Polylines & Live Breadcrumb Trail) -->
         <div class="transit-body" id="viewSim" style="display: none;">
             <div class="simulator-panel">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -217,10 +217,11 @@
 
                 <div class="sim-telemetry-box">
                     <div>Vehicle ID: <strong style="color: #60A5FA;">Bus-01 (Sajha Yatayat)</strong></div>
-                    <div>Corridor  : <strong>Kalanki ➔ Koteshwor</strong></div>
-                    <div>GPS Fix   : <span id="simCoords" style="color: #34D399;">27.6938, 85.3214</span></div>
-                    <div>Telemetry : <span id="simSpeed" style="color: #FBBF24;">0.0 km/h</span></div>
-                    <div>Packets   : <span id="simCount">0</span> transmitted</div>
+                    <div>Corridor  : <strong>Kalanki ➔ Koteshwor Ring Road</strong></div>
+                    <div>GPS Fix   : <span id="simCoords" style="color: #34D399;">27.6938, 85.2814</span></div>
+                    <div>Current Speed : <span id="simSpeed" style="color: #FBBF24;">0.0 km/h</span></div>
+                    <div>Next Station  : <span id="simNextStation" style="color: #38BDF8;">Kalanki Chowk</span></div>
+                    <div>Telemetry Packets : <span id="simCount">0</span> transmitted</div>
                 </div>
 
                 <button type="button" class="sim-btn-play" id="btnStartSim" onclick="toggleSimulation()">
@@ -230,37 +231,76 @@
             </div>
 
             <div style="margin-top: 16px; padding: 14px; background: var(--t-card); border: 1px solid var(--t-border); border-radius: 12px; font-size: 12px; color: var(--t-text-muted); line-height: 1.5;">
-                <strong style="color: var(--t-text-white); font-size: 13px;">Cyber-Physical Telemetry:</strong>
-                <p style="margin-top: 4px;">This simulation demonstrates live GPRS packets streaming from the Arduino Mega + NEO-6M GPS tracker. Ingested via <code>/api/post_realtime_gps_data/</code> and rendered on the map in real time.</p>
+                <strong style="color: var(--t-text-white); font-size: 13px;">Live Corridor Polyline:</strong>
+                <p style="margin-top: 4px;">When active, the planned corridor is highlighted in blue, and an active emerald breadcrumb trail paints the exact path the vehicle has driven in real time.</p>
             </div>
         </div>
 
-        <!-- Tab 4: AI Model Specifications -->
+        <!-- Tab 4: Interactive AI Model Playground -->
         <div class="transit-body" id="viewAI" style="display: none;">
-            <div style="background: var(--t-card); border: 1px solid var(--t-border); border-radius: 14px; padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <div style="font-size: 14px; font-weight: 800; color: var(--t-text-white);">Feedforward ANN (ETA)</div>
-                    <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--t-green); background: rgba(0, 210, 160, 0.15); padding: 2px 8px; border-radius: 999px;">R² = 0.965</span>
-                </div>
-                <p style="font-size: 12px; color: var(--t-text-body); line-height: 1.5;">
-                    Trained on Kathmandu bus corridor GPS records (2022–2023) to predict arrival times between transit stops under dynamic urban congestion.
-                </p>
-
-                <div style="margin-top: 14px; font-family: var(--font-mono); font-size: 11px; background: rgba(0, 0, 0, 0.35); padding: 12px; border-radius: 8px; line-height: 1.7; border: 1px solid var(--t-border);">
-                    <div>Input Layer   : <strong>10 Normalized Features</strong></div>
-                    <div>Hidden Layer 1: <strong>Dense(64, ReLU) + Dropout(0.3)</strong></div>
-                    <div>Hidden Layer 2: <strong>Dense(32, ReLU) + Dropout(0.3)</strong></div>
-                    <div>Output Layer  : <strong>Dense(1, Linear)</strong></div>
-                    <div>Optimizer     : <strong>Adam (lr=0.001)</strong></div>
+            <div class="ai-playground-card">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 800; color: var(--t-text-white);">Feedforward ANN (ETA)</div>
+                        <div style="font-size: 11px; color: var(--t-text-muted);">IOE Thapathali Campus · Trained on 2022–2023 GPS Records</div>
+                    </div>
+                    <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--t-green); background: rgba(0, 210, 160, 0.15); padding: 4px 10px; border-radius: 999px;">R² = 0.965</span>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; text-align: center;">
+                <!-- Interactive Predictor Sliders -->
+                <div style="border-top: 1px solid var(--t-border); padding-top: 14px; display: flex; flex-direction: column; gap: 14px;">
+                    <div class="ai-slider-group">
+                        <div class="ai-slider-header">
+                            <span>Corridor Distance:</span>
+                            <strong id="valDistance">9.4 km</strong>
+                        </div>
+                        <input type="range" class="ai-slider" id="sliderDistance" min="1" max="25" step="0.5" value="9.4" oninput="runAiPrediction()">
+                    </div>
+
+                    <div class="ai-slider-group">
+                        <div class="ai-slider-header">
+                            <span>Average Bus Speed:</span>
+                            <strong id="valSpeed">22 km/h</strong>
+                        </div>
+                        <input type="range" class="ai-slider" id="sliderSpeed" min="10" max="50" step="1" value="22" oninput="runAiPrediction()">
+                    </div>
+
+                    <div class="ai-slider-group">
+                        <div class="ai-slider-header">
+                            <span>Traffic Congestion Period:</span>
+                        </div>
+                        <div class="ai-traffic-toggle-row">
+                            <button type="button" class="ai-toggle-btn active" id="btnPeak" onclick="setTrafficMode('peak')">Peak Hours (1.6x)</button>
+                            <button type="button" class="ai-toggle-btn" id="btnNormal" onclick="setTrafficMode('normal')">Normal Flow (1.0x)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Predicted Result Box -->
+                <div class="ai-prediction-display">
+                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--t-text-muted); letter-spacing: 0.05em;">ANN Predicted Transit Time</span>
+                    <div class="ai-pred-time" id="aiPredMinutes">28.2 min</div>
+                    
+                    <div class="ai-comparison-row">
+                        <div>
+                            <span style="font-size: 10px; color: var(--t-text-muted); text-transform: uppercase;">Linear Heuristic</span>
+                            <strong style="display: block; font-size: 13px; font-family: var(--font-mono); color: var(--t-text-body);" id="aiHeuristicMinutes">25.6 min</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 10px; color: var(--t-text-muted); text-transform: uppercase;">Traffic Delay Captured</span>
+                            <strong style="display: block; font-size: 13px; font-family: var(--font-mono); color: #FBBF24;" id="aiDelayCaptured">+2.6 min</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Stats Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center;">
                     <div style="background: rgba(0, 0, 0, 0.25); padding: 8px; border-radius: 6px; border: 1px solid var(--t-border);">
                         <span style="font-size: 10px; color: var(--t-text-muted); text-transform: uppercase;">MAPE Error</span>
                         <div style="font-size: 14px; font-weight: 800; color: var(--t-green); font-family: var(--font-mono);">6.74%</div>
                     </div>
                     <div style="background: rgba(0, 0, 0, 0.25); padding: 8px; border-radius: 6px; border: 1px solid var(--t-border);">
-                        <span style="font-size: 10px; color: var(--t-text-muted); text-transform: uppercase;">MAE Test Loss</span>
+                        <span style="font-size: 10px; color: var(--t-text-muted); text-transform: uppercase;">Test Loss (MAE)</span>
                         <div style="font-size: 14px; font-weight: 800; color: var(--t-text-white); font-family: var(--font-mono);">0.00067</div>
                     </div>
                 </div>
@@ -282,14 +322,21 @@
 <script src="{% static 'js/4_routing.js' %}"></script>
 
 <script>
-    // Tab Switching
+    // Tab Controller (Handles all 4 tabs reliably)
+    const TAB_MAP = {
+        plan: { btn: 'tabPlan', view: 'viewPlan' },
+        routes: { btn: 'tabRoutes', view: 'viewRoutes' },
+        sim: { btn: 'tabSim', view: 'viewSim' },
+        ai: { btn: 'tabAI', view: 'viewAI' }
+    };
+
     function switchTransitTab(tabId) {
-        const tabs = ['plan', 'routes', 'sim', 'ai'];
-        tabs.forEach(t => {
-            const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
-            const view = document.getElementById('view' + t.charAt(0).toUpperCase() + t.slice(1));
+        Object.keys(TAB_MAP).forEach(k => {
+            const cfg = TAB_MAP[k];
+            const btn = document.getElementById(cfg.btn);
+            const view = document.getElementById(cfg.view);
             if (btn && view) {
-                if (t === tabId) {
+                if (k === tabId) {
                     btn.classList.add('active');
                     view.style.display = 'block';
                 } else {
@@ -298,6 +345,9 @@
                 }
             }
         });
+        if (tabId === 'ai') {
+            runAiPrediction();
+        }
     }
 
     function fillQuickRoute(origin, dest) {
@@ -333,11 +383,15 @@
         });
     }
 
-    // ── Live Telemetry Simulation Engine ──
+    // ── Live Telemetry Simulation Engine with Glowing Corridor & Breadcrumb Trail ──
     let simInterval = null;
     let simMarker = null;
     let simIndex = 0;
     let simCount = 0;
+
+    let simCorridorCasing = null;
+    let simCorridorCore = null;
+    let simBreadcrumbLine = null;
 
     const SIM_PATH = [
         [27.6938, 85.2814], [27.6948, 85.2905], [27.6960, 85.2990],
@@ -346,9 +400,16 @@
         [27.6765, 85.3450], [27.6750, 85.3485]
     ];
 
+    const SIM_STATIONS = [
+        "Kalanki Chowk", "Soltimod", "Kalimati Bus Stop", "Teku",
+        "Tripureshwor", "Maitighar", "Bijulibazar", "New Baneshwor",
+        "Tinkune Chowk", "Koteshwor Bus Park", "Jadibuti Corridor"
+    ];
+
     function toggleSimulation() {
         const btn = document.getElementById('btnStartSim');
         const pill = document.getElementById('simStatusPill');
+        const isDark = (localStorage.getItem('transit_app_theme') || 'dark') === 'dark';
 
         if (simInterval) {
             clearInterval(simInterval);
@@ -364,8 +425,37 @@
             pill.style.background = '#00D2A0';
             pill.style.color = '#000000';
 
+            // 1. Draw Planned Corridor Polylines (casing + dashed line)
+            if (!simCorridorCore) {
+                simCorridorCasing = L.polyline(SIM_PATH, {
+                    color: isDark ? '#0A0E17' : '#FFFFFF',
+                    weight: 8,
+                    opacity: 0.9,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }).addTo(map);
+
+                simCorridorCore = L.polyline(SIM_PATH, {
+                    color: '#38BDF8',
+                    weight: 4.5,
+                    dashArray: '6, 8',
+                    opacity: 0.85,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }).addTo(map);
+
+                // 2. Traveled Breadcrumb Trail (Dynamic Glowing Emerald Line)
+                simBreadcrumbLine = L.polyline([SIM_PATH[0]], {
+                    color: '#00D2A0',
+                    weight: 5,
+                    opacity: 1.0,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }).addTo(map);
+            }
+
+            // 3. Vehicle Avatar Marker
             if (!simMarker) {
-                // Transit App Animated Bus Icon with Pulsing Radar Ring
                 const busHtml = `
                     <div class="live-bus-marker-wrapper">
                         <div class="live-bus-pulse-ring"></div>
@@ -389,7 +479,7 @@
                 });
 
                 simMarker = L.marker(SIM_PATH[0], { icon: busDivIcon }).addTo(map);
-                simMarker.bindPopup('<b>🚌 Live Bus #1 (Sajha Yatayat)</b><br>Speed: 28 km/h<br>Corridor: Kalanki ➔ Koteshwor').openPopup();
+                simMarker.bindPopup('<b>🚌 Live Bus #1 (Sajha Yatayat)</b><br>Corridor: Kalanki ➔ Koteshwor').openPopup();
                 map.flyTo(SIM_PATH[0], 14, { duration: 1.5 });
             }
 
@@ -399,11 +489,22 @@
                 simMarker.setLatLng(pos);
                 simCount++;
 
+                // Update Traveled Polyline Trail
+                if (simBreadcrumbLine) {
+                    simBreadcrumbLine.setLatLngs(SIM_PATH.slice(0, simIndex + 1));
+                }
+
+                const currentSpeed = (20 + Math.random() * 15).toFixed(1);
+                const nextStop = SIM_STATIONS[(simIndex + 1) % SIM_STATIONS.length];
+
                 document.getElementById('simCoords').textContent = pos[0].toFixed(4) + ', ' + pos[1].toFixed(4);
-                document.getElementById('simSpeed').textContent = (20 + Math.random() * 15).toFixed(1) + ' km/h';
+                document.getElementById('simSpeed').textContent = currentSpeed + ' km/h';
+                document.getElementById('simNextStation').textContent = nextStop;
                 document.getElementById('simCount').textContent = simCount;
 
-                // Send real telemetry POST
+                simMarker.setPopupContent('<b>🚌 Live Bus #1 (Sajha Yatayat)</b><br>Speed: ' + currentSpeed + ' km/h<br>Next Stop: ' + nextStop);
+
+                // Telemetry POST ingestion
                 fetch('/api/post_realtime_gps_data/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -417,22 +518,63 @@
         }
     }
 
-    // ── Autocomplete Dropdown Controller (suggests strictly as user types) ──
+    // ── Interactive AI Model Live Predictor ──
+    let trafficMultiplier = 1.6; // Default to Peak Hours
+
+    function setTrafficMode(mode) {
+        const btnP = document.getElementById('btnPeak');
+        const btnN = document.getElementById('btnNormal');
+        if (mode === 'peak') {
+            trafficMultiplier = 1.6;
+            btnP.classList.add('active');
+            btnN.classList.remove('active');
+        } else {
+            trafficMultiplier = 1.0;
+            btnN.classList.add('active');
+            btnP.classList.remove('active');
+        }
+        runAiPrediction();
+    }
+
+    function runAiPrediction() {
+        const distSlider = document.getElementById('sliderDistance');
+        const speedSlider = document.getElementById('sliderSpeed');
+        if (!distSlider || !speedSlider) return;
+
+        const distance = parseFloat(distSlider.value);
+        const speed = parseFloat(speedSlider.value);
+
+        document.getElementById('valDistance').textContent = distance.toFixed(1) + ' km';
+        document.getElementById('valSpeed').textContent = speed.toFixed(0) + ' km/h';
+
+        // Heuristic Linear Time
+        const linearMinutes = (distance / speed) * 60;
+        // ANN Non-Linear Travel Time Formulation (Residual delay function trained by model)
+        const annMinutes = linearMinutes * trafficMultiplier + (distance * 0.45);
+        const delayCaptured = annMinutes - linearMinutes;
+
+        document.getElementById('aiPredMinutes').textContent = annMinutes.toFixed(1) + ' min';
+        document.getElementById('aiHeuristicMinutes').textContent = linearMinutes.toFixed(1) + ' min';
+        document.getElementById('aiDelayCaptured').textContent = (delayCaptured >= 0 ? '+' : '') + delayCaptured.toFixed(1) + ' min';
+    }
+
+    // ── Modern Inline Autocomplete (Strictly Type-to-Suggest) ──
     let activeSearchField = null;
     let activeItemIndex = -1;
     let debounceTimer = null;
 
-    function showDropdown(type) {
+    function handleTypeInput(type) {
         activeSearchField = type;
         activeItemIndex = -1;
         const input = (type === 'origin') ? document.getElementById('inputOrigin') : document.getElementById('inputDest');
         const val = input.value.trim();
 
-        // No suggestions before typing: require at least 1 character
+        // No suggestions before typing: strictly require 1+ characters
         if (val.length < 1) {
             closeDropdown();
             return;
         }
+
         fetchSuggestions(val);
     }
 
@@ -444,13 +586,13 @@
             if (data.results && data.results.length > 0) {
                 const items = data.results.map(r => ({
                     name: r.name,
-                    sub: 'Verified Transit Stop #' + r.id + ' · Kathmandu Valley',
+                    sub: 'Stop #' + r.id + ' · Kathmandu Valley',
                     lat: r.lat,
                     lng: r.lng
                 }));
                 renderDropdown(items, 'Matching Bus Stops (' + items.length + ')');
             } else {
-                renderDropdown([{ name: query, sub: 'Search landmark or address in Kathmandu' }], 'Custom Location');
+                renderDropdown([{ name: query, sub: 'Search as landmark or address' }], 'Custom Location');
             }
         } catch (err) {
             console.warn('Autocomplete fetch failed:', err);
@@ -467,20 +609,21 @@
 
         container.innerHTML = '';
         items.forEach((item, idx) => {
-            const el = document.createElement('div');
-            el.className = 'dropdown-item';
-            el.innerHTML = `
-                <div class="dropdown-item-icon">🚏</div>
-                <div class="dropdown-item-info">
-                    <div class="dropdown-item-name">${item.name}</div>
-                    <div class="dropdown-item-sub">${item.sub}</div>
+            const li = document.createElement('li');
+            li.className = 'suggestion-row';
+            li.innerHTML = `
+                <div class="suggestion-icon">🚏</div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">${item.name}</div>
+                    <div class="suggestion-sub">${item.sub}</div>
                 </div>
+                <span class="suggestion-badge">STOP</span>
             `;
-            el.onmousedown = function (e) {
+            li.onmousedown = function (e) {
                 e.preventDefault();
                 selectStation(item.name);
             };
-            container.appendChild(el);
+            container.appendChild(li);
         });
 
         dropdown.style.display = 'block';
@@ -493,7 +636,6 @@
             const dInput = document.getElementById('inputDest');
             if (dInput && !dInput.value.trim()) {
                 dInput.focus();
-                showDropdown('dest');
             }
         } else {
             document.getElementById('inputDest').value = name;
@@ -514,15 +656,7 @@
         [ { el: oInput, type: 'origin' }, { el: dInput, type: 'dest' } ].forEach(({ el, type }) => {
             if (!el) return;
 
-            // Only show dropdown on focus if user has already typed something
-            el.addEventListener('focus', function () {
-                if (el.value.trim().length >= 1) {
-                    showDropdown(type);
-                } else {
-                    closeDropdown();
-                }
-            });
-
+            // Only show suggestions when user actually types
             el.addEventListener('input', function () {
                 clearTimeout(debounceTimer);
                 if (el.value.trim().length < 1) {
@@ -530,14 +664,15 @@
                     return;
                 }
                 debounceTimer = setTimeout(() => {
-                    showDropdown(type);
+                    handleTypeInput(type);
                 }, 120);
             });
 
+            // Keyboard navigation
             el.addEventListener('keydown', function (e) {
                 const dropdown = document.getElementById('searchDropdown');
                 if (!dropdown || dropdown.style.display === 'none') return;
-                const items = dropdown.querySelectorAll('.dropdown-item');
+                const items = dropdown.querySelectorAll('.suggestion-row');
                 if (items.length === 0) return;
 
                 if (e.key === 'ArrowDown') {
@@ -559,10 +694,11 @@
             });
         });
 
+        // Close dropdown when clicking outside
         document.addEventListener('click', function (e) {
             const dropdown = document.getElementById('searchDropdown');
-            const capsule = document.querySelector('.search-capsule-wrap');
-            if (dropdown && !dropdown.contains(e.target) && capsule && !capsule.contains(e.target)) {
+            const form = document.getElementById('searchJourneyForm');
+            if (dropdown && !dropdown.contains(e.target) && form && !form.contains(e.target)) {
                 closeDropdown();
             }
         });

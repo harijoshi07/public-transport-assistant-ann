@@ -248,7 +248,7 @@ html, body {
   flex-direction: column;
   gap: 10px;
   position: relative;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .search-capsule-wrap:focus-within {
@@ -325,6 +325,130 @@ html, body {
   transform: translateY(-50%) rotate(180deg);
 }
 
+/* ─── Modern Inline Suggestions (Google Maps / Uber / Transit App Style) ─── */
+.search-suggestions-container {
+  margin-top: 12px;
+  background: var(--t-card);
+  border: 1px solid var(--t-border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  animation: slide-down-fade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-down-fade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.suggestions-header {
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--t-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.suggestions-header span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-text-muted);
+}
+
+.suggestions-header button {
+  background: transparent;
+  border: none;
+  color: var(--t-text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.suggestions-header button:hover {
+  color: var(--t-text-white);
+}
+
+.suggestions-list {
+  max-height: 250px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 4px 0;
+}
+
+.suggestion-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.suggestion-row:last-child {
+  border-bottom: none;
+}
+
+.suggestion-row:hover, .suggestion-row.selected {
+  background: var(--t-card-hover);
+  padding-left: 20px;
+}
+
+.suggestion-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(0, 210, 160, 0.12);
+  color: var(--t-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.suggestion-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--t-text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.12s;
+}
+
+.suggestion-row:hover .suggestion-name {
+  color: var(--t-green);
+}
+
+.suggestion-sub {
+  font-size: 11px;
+  color: var(--t-text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--t-text-muted);
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 /* ─── Transit App "GO" Button ─── */
 .btn-go {
   width: 100%;
@@ -386,119 +510,6 @@ html, body {
   background: var(--t-card-hover);
   border-color: var(--t-green);
   color: var(--t-green);
-}
-
-/* ─── Search Dropdown Suggestions (Google Maps / Uber / Transit App style) ─── */
-.search-dropdown-menu {
-  position: absolute;
-  top: 135px;
-  left: 20px;
-  right: 20px;
-  background: rgba(18, 24, 38, 0.98);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid var(--t-border-strong);
-  border-radius: var(--radius-md);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
-  z-index: 2000;
-  overflow: hidden;
-  animation: dropdown-fade-in 0.15s ease-out;
-}
-
-@keyframes dropdown-fade-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.dropdown-header-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px 8px;
-  border-bottom: 1px solid var(--t-border);
-}
-
-.dropdown-header-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--t-text-muted);
-}
-
-.btn-dropdown-close {
-  background: transparent;
-  border: none;
-  color: var(--t-text-dim);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
-}
-
-.btn-dropdown-close:hover {
-  color: var(--t-text-white);
-}
-
-.dropdown-items-scroll {
-  max-height: 240px;
-  overflow-y: auto;
-  padding: 4px 0;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  user-select: none;
-}
-
-.dropdown-item:hover, .dropdown-item.selected {
-  background: var(--t-card-hover);
-}
-
-.dropdown-item:hover .dropdown-item-name, .dropdown-item.selected .dropdown-item-name {
-  color: var(--t-green);
-}
-
-.dropdown-item-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--t-green);
-  flex-shrink: 0;
-  font-size: 13px;
-}
-
-.dropdown-item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.dropdown-item-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--t-text-white);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color 0.12s;
-}
-
-.dropdown-item-sub {
-  font-size: 11px;
-  color: var(--t-text-muted);
-  margin-top: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ─── Transit App Nearby Lines Live Cards ─── */
@@ -796,9 +807,225 @@ html, body {
   color: #fff;
 }
 
+/* ─── AI Model Interactive Playground ─── */
+.ai-playground-card {
+  background: var(--t-card);
+  border: 1px solid var(--t-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.ai-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t-text-body);
+}
+
+.ai-slider-header strong {
+  font-family: var(--font-mono);
+  color: var(--t-green);
+}
+
+.ai-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+  cursor: pointer;
+}
+
+.ai-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--t-green);
+  box-shadow: 0 0 10px var(--t-green);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.ai-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.ai-traffic-toggle-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ai-toggle-btn {
+  flex: 1;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--t-border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--t-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ai-toggle-btn.active {
+  background: var(--t-green);
+  color: #000000;
+  border-color: var(--t-green);
+  box-shadow: 0 2px 10px var(--t-green-glow);
+}
+
+.ai-prediction-display {
+  background: linear-gradient(135deg, rgba(0, 210, 160, 0.12) 0%, rgba(41, 121, 255, 0.12) 100%);
+  border: 1px solid rgba(0, 210, 160, 0.3);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+}
+
+.ai-pred-time {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--t-green);
+  line-height: 1.1;
+  margin-top: 4px;
+}
+
+.ai-comparison-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 /* ─── Leaflet Metro Corridors & Markers ─── */
 .leaflet-container {
   font-family: var(--font-main) !important;
+}
+
+/* Custom SVG DivIcon Pins */
+.custom-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.pin-label {
+  font-family: var(--font-main);
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+/* Origin Beacon */
+.origin-pin .pin-core {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #10B981;
+  border: 3.5px solid #FFFFFF;
+  box-shadow: 0 3px 12px rgba(16, 185, 129, 0.6);
+  position: relative;
+  z-index: 2;
+}
+
+.origin-pin .pin-pulse {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.4);
+  animation: pin-pulse 2s infinite;
+  z-index: 1;
+}
+
+@keyframes pin-pulse {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Destination Teardrop */
+.dest-pin .pin-head {
+  filter: drop-shadow(0 4px 10px rgba(225, 29, 72, 0.5));
+  z-index: 2;
+}
+
+/* Station Nodes */
+.station-node-pin {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3.5px solid #2563EB;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s;
+  position: relative;
+}
+
+.station-node-pin:hover {
+  transform: scale(1.35);
+  border-color: #00D2A0;
+  color: #00D2A0;
+  z-index: 1000 !important;
+}
+
+.station-node-tooltip {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  color: #F8FAFC;
+  font-family: var(--font-main);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.station-node-pin:hover .station-node-tooltip {
+  opacity: 1;
 }
 
 /* Glowing Pulsing Vehicle Avatar */
@@ -841,16 +1068,6 @@ html, body {
   100% { transform: scale(1.6); opacity: 0; }
 }
 
-/* Station Dot Markers */
-.station-dot-marker {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #FFFFFF;
-  border: 3.5px solid #2979FF;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
 /* Dark Mode Leaflet Popup Overrides */
 .leaflet-popup-content-wrapper {
   background: var(--t-card) !important;
@@ -866,7 +1083,7 @@ html, body {
 }
 
 .leaflet-routing-container {
-  display: none !important; /* Hide default raw routing table */
+  display: none !important;
 }
 
 /* ─── Mobile Responsiveness ─── */
@@ -878,6 +1095,6 @@ html, body {
     width: 100vw;
     max-width: 100vw;
     border-radius: 24px 24px 0 0;
-    max-height: 70vh;
+    max-height: 72vh;
   }
 }
