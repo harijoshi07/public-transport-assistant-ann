@@ -19,42 +19,27 @@
                         {{ current_route.route_english_name|default:"Transit Corridor" }}
                     </div>
                     <div style="font-size: 11px; opacity: 0.9; margin-top: 2px;">
-                        Line #{{ current_route.route_actual_id|default:current_route.route_id }} · {{ stations_variable|length }} Verified Stops
+                        Line #{{ current_route.route_actual_id|default:current_route.route_id }} · {{ stations_variable|length }} stops
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sequential Stations Subway List -->
-        <div class="places-scroll-container" style="padding: 14px 16px;">
-            <div class="places-section-header" style="padding: 0 0 10px;">
-                Sequential Stops ({{ stations_variable|length }})
-            </div>
-
-            <div>
-                <ol style="padding: 0; margin: 0; list-style: none;">
-                    {% for station in stations_variable %}
-                    <li class="place-item-row" style="padding: 10px 8px; border-bottom: 1px solid var(--border-subtle);">
-                        <!-- Subway Timeline Node -->
-                        <span style="width: 24px; height: 24px; border-radius: 50%; background: #00B377; color: #FFFFFF; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--font-mono); box-shadow: 0 2px 6px rgba(0, 179, 119, 0.4);">
-                            {{ forloop.counter }}
-                        </span>
-
-                        <!-- Station Info -->
-                        <div class="place-text-col" style="margin-left: 4px;">
-                            <div class="place-primary-name">
-                                {{ station.station_english_name }}
-                            </div>
-                            <div class="place-secondary-address">
-                                Stop #{{ forloop.counter }} · ID: {{ station.station_id }} · ({{ station.station_latitude|floatformat:4 }}, {{ station.station_longitude|floatformat:4 }})
-                            </div>
-                        </div>
-                    </li>
-                    {% empty %}
-                    <li style="font-size: 13px; color: var(--text-muted); padding: 12px 0;">No stations registered for this corridor.</li>
-                    {% endfor %}
-                </ol>
-            </div>
+        <div class="places-scroll-container">
+            <div class="places-section-header">Stops along this line</div>
+            <ol class="stop-timeline">
+                {% for station in stations_variable %}
+                <li class="stop-row{% if forloop.first or forloop.last %} is-terminal{% endif %}">
+                    <span class="stop-rail" aria-hidden="true"><span class="stop-dot"></span></span>
+                    <div class="stop-copy">
+                        <div class="stop-name">{{ station.station_english_name }}</div>
+                        <div class="stop-meta">{% if forloop.first %}First stop{% elif forloop.last %}Last stop{% else %}Stop {{ forloop.counter }}{% endif %}</div>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="plan-empty">No passenger stops on this corridor.</li>
+                {% endfor %}
+            </ol>
         </div>
 
         <!-- Sidebar Footer -->
@@ -69,21 +54,19 @@
 
         <!-- Floating Controls -->
         <div class="map-floating-controls">
-            <button type="button" class="map-control-btn" onclick="toggleMapTheme()" title="Toggle Dark/Light Map" id="btnThemeToggle">
-                <svg id="mapThemeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
-                </svg>
-            </button>
-            <button type="button" class="map-control-btn" onclick="getUserLocation()" title="My Current Location">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="button" class="map-control-btn" onclick="resetMapCenter()" title="Compass">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
                 </svg>
             </button>
-            <button type="button" class="map-control-btn" onclick="resetMapCenter()" title="Recenter to Kathmandu">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="3"></circle>
+            <button type="button" class="map-control-btn" onclick="toggleMapTheme()" title="Toggle map theme" id="btnThemeToggle">
+                <svg id="mapThemeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <button type="button" class="map-control-btn" id="btnMyLocation" onclick="getUserLocation(true)" title="My location">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 8a4 4 0 1 0 .001 8.001A4 4 0 0 0 12 8zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/>
                 </svg>
             </button>
         </div>
@@ -92,92 +75,103 @@
 
 <!-- Output stations JSON for dynamic Leaflet plotting -->
 {{ stations_variable|json_script:"routeStationsJson" }}
+{{ shape_variable|json_script:"routeShapeJson" }}
 
 <script src="{% static 'js/1_outputMenu.js' %}"></script>
-<script src="{% static 'js/2_loadmap.js' %}"></script>
-<script src="{% static 'js/3_myLocation.js' %}"></script>
+<script src="{% static 'js/2_loadmap.js' %}?v=2"></script>
+<script src="{% static 'js/3_myLocation.js' %}?v=4"></script>
 
 <script>
-    let activeCorridorCasing = null;
     let activeCorridorCore = null;
 
-    window.applyPolylineTheme = function(isDark) {
-        if (activeCorridorCasing) {
-            activeCorridorCasing.setStyle({
-                color: isDark ? '#0A0E17' : '#FFFFFF',
-                opacity: isDark ? 0.9 : 0.95
-            });
+    function readJson(id) {
+        const el = document.getElementById(id);
+        if (!el || !el.textContent || el.textContent.trim() === 'null') return [];
+        try {
+            const data = JSON.parse(el.textContent);
+            return Array.isArray(data) ? data : [];
+        } catch (err) {
+            return [];
         }
+    }
+
+    function teardropIcon(fill) {
+        const html = `
+            <div style="filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));">
+                <svg width="28" height="38" viewBox="0 0 24 32" fill="none">
+                    <path d="M12 0C5.37 0 0 5.37 0 12C0 22 12 32 12 32C12 32 24 22 24 12C24 5.37 18.63 0 12 0Z" fill="${fill}"/>
+                    <circle cx="12" cy="11" r="5" fill="#FFFFFF"/>
+                    <circle cx="12" cy="11" r="2.5" fill="${fill}"/>
+                </svg>
+            </div>`;
+        return L.divIcon({
+            html: html,
+            className: '',
+            iconSize: [28, 38],
+            iconAnchor: [14, 38],
+            popupAnchor: [0, -34]
+        });
+    }
+
+    window.applyPolylineTheme = function () {
         if (activeCorridorCore) {
-            activeCorridorCore.setStyle({
-                color: isDark ? '#00D2A0' : '#00B377'
-            });
+            activeCorridorCore.setStyle({ color: '#00B377', weight: 6, opacity: 1 });
         }
     };
 
     document.addEventListener('DOMContentLoaded', function () {
-        const stationsEl = document.getElementById('routeStationsJson');
-        if (stationsEl && typeof map !== 'undefined') {
-            try {
-                const stations = JSON.parse(stationsEl.textContent);
-                if (Array.isArray(stations) && stations.length > 0) {
-                    const latlngs = [];
-                    const isDark = (localStorage.getItem('transit_app_theme') || 'light') === 'dark';
+        if (typeof map === 'undefined') return;
+        const locateAtStart = window.userLocateSeq || 0;
+        const stations = readJson('routeStationsJson');
+        const shape = readJson('routeShapeJson');
+        const linePoints = (shape.length ? shape : stations).map(function (point) {
+            if (Array.isArray(point)) return point;
+            return [point.lat || point.station_latitude, point.lng || point.station_longitude];
+        }).filter(function (point) {
+            return point[0] != null && point[1] != null;
+        });
 
-                    stations.forEach(function (s, idx) {
-                        if (s.station_latitude && s.station_longitude) {
-                            const pt = [s.station_latitude, s.station_longitude];
-                            latlngs.push(pt);
+        if (linePoints.length > 1) {
+            activeCorridorCore = L.polyline(linePoints, {
+                color: '#00B377',
+                weight: 6,
+                opacity: 1,
+                lineCap: 'round',
+                lineJoin: 'round',
+                smoothFactor: 1.2
+            }).addTo(map);
+        }
 
-                            const stationNodeHtml = `
-                                <div class="station-node-pin">
-                                    <span>${idx + 1}</span>
-                                    <div class="station-node-tooltip">${s.station_english_name}</div>
-                                </div>`;
-
-                            const dotIcon = L.divIcon({
-                                html: stationNodeHtml,
-                                className: '',
-                                iconSize: [20, 20],
-                                iconAnchor: [10, 10],
-                                popupAnchor: [0, -12]
-                            });
-
-                            L.marker(pt, { icon: dotIcon })
-                                .addTo(map)
-                                .bindPopup("<b>Stop #" + (idx + 1) + ": " + s.station_english_name + "</b><br><span style='font-size:11px;color:#888;'>ID: " + s.station_id + "</span>");
-                        }
-                    });
-
-                    if (latlngs.length > 1) {
-                        // 1. Contrast Casing Layer
-                        activeCorridorCasing = L.polyline(latlngs, {
-                            color: isDark ? '#0A0E17' : '#FFFFFF',
-                            weight: 8,
-                            opacity: isDark ? 0.9 : 0.95,
-                            lineCap: 'round',
-                            lineJoin: 'round'
-                        }).addTo(map);
-
-                        // 2. Core Metro Line (Transit Green)
-                        activeCorridorCore = L.polyline(latlngs, {
-                            color: isDark ? '#00D2A0' : '#00B377',
-                            weight: 5,
-                            opacity: 1.0,
-                            lineCap: 'round',
-                            lineJoin: 'round'
-                        }).addTo(map);
-
-                        map.fitBounds(latlngs, {
-                            paddingTopLeft: [400, 60],
-                            paddingBottomRight: [60, 60],
-                            maxZoom: 15
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error("Error plotting transit corridor:", err);
+        stations.forEach(function (stop, idx) {
+            const point = [stop.station_latitude, stop.station_longitude];
+            if (point[0] == null || point[1] == null) return;
+            const isEnd = idx === 0 || idx === stations.length - 1;
+            const label = (idx === 0 ? 'First stop' : (idx === stations.length - 1 ? 'Last stop' : 'Stop ' + (idx + 1))) + ': ' + stop.station_english_name;
+            if (isEnd) {
+                L.marker(point, {
+                    icon: teardropIcon(idx === 0 ? '#00B377' : '#DC2626'),
+                    zIndexOffset: 500
+                }).addTo(map).bindPopup('<b>' + stop.station_english_name + '</b>');
+            } else {
+                L.circleMarker(point, {
+                    radius: 5,
+                    color: '#FFFFFF',
+                    weight: 2,
+                    fillColor: '#00B377',
+                    fillOpacity: 1
+                }).addTo(map).bindTooltip(label, { direction: 'top', offset: [0, -4] });
             }
+        });
+
+        const bounds = linePoints.length ? linePoints : stations.map(function (stop) {
+            return [stop.station_latitude, stop.station_longitude];
+        });
+        if (bounds.length > 1 && (window.userLocateSeq || 0) === locateAtStart) {
+            map.fitBounds(bounds, {
+                paddingTopLeft: [420, 70],
+                paddingBottomRight: [70, 70],
+                maxZoom: 15
+            });
         }
     });
 </script>

@@ -11,38 +11,64 @@ const map = L.map('map', {
   center: KTM_CENTER,
   zoom: DEFAULT_ZOOM,
   zoomControl: false,
+  zoomAnimation: true,
+  markerZoomAnimation: true,
   fadeAnimation: true,
+  zoomSnap: 1,
+  zoomDelta: 1,
+  wheelPxPerZoomLevel: 100,
+  bounceAtZoomLimits: false,
 });
 
 // Reposition Zoom Control cleanly to bottom right
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// ── MapTiler High-DPI (@2x Retina 512px) Tile Layers ──
-// 1. Daylight Basemap: MapTiler Streets-v2
+// 512px tiles cover a 2x2 block (zoomOffset -1). Do not also request @2x,
+// which downloads 1024px images and makes the zoom animation snap.
+const TILE_OPTS = {
+  tileSize: 512,
+  zoomOffset: -1,
+  minZoom: 1,
+  maxZoom: 19,
+  detectRetina: false,
+  updateWhenZooming: false,
+  updateWhenIdle: false,
+  keepBuffer: 4,
+  updateInterval: 40,
+  crossOrigin: true,
+};
+
 const maptilerStreets = L.tileLayer(
-  `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}@2x.png?key=${MAPTILER_KEY}`,
-  {
-    tileSize: 512,
-    zoomOffset: -1,
-    minZoom: 1,
-    maxZoom: 19,
+  `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
+  Object.assign({}, TILE_OPTS, {
     attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-    crossOrigin: true,
-  }
+  })
 );
 
-// 2. Night Basemap: MapTiler Dataviz Dark
 const maptilerDark = L.tileLayer(
-  `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}@2x.png?key=${MAPTILER_KEY}`,
-  {
-    tileSize: 512,
-    zoomOffset: -1,
-    minZoom: 1,
-    maxZoom: 19,
+  `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
+  Object.assign({}, TILE_OPTS, {
     attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>',
-    crossOrigin: true,
-  }
+  })
 );
+
+let baseLayerToken = 0;
+
+function showBaseLayer(next, prev) {
+  const token = ++baseLayerToken;
+  const wasReady = map.hasLayer(next) && typeof next.isLoading === 'function' && !next.isLoading();
+  if (!map.hasLayer(next)) next.addTo(map);
+  const dropPrev = function () {
+    if (token !== baseLayerToken) return;
+    if (prev && map.hasLayer(prev)) map.removeLayer(prev);
+  };
+  if (wasReady) {
+    dropPrev();
+    return;
+  }
+  next.once('load', dropPrev);
+  setTimeout(dropPrev, 1800);
+}
 
 // ── Theme State Management with LocalStorage Persistence ──
 // Default to light theme (matching the Transit App daylight screenshot)
@@ -81,15 +107,13 @@ function updateThemeUI() {
 // Toggle Theme & Persist across all route views & page reloads
 function toggleMapTheme() {
   if (isDarkMap) {
-    map.removeLayer(maptilerDark);
-    map.addLayer(maptilerStreets);
+    showBaseLayer(maptilerStreets, maptilerDark);
     isDarkMap = false;
     window.isDarkMap = false;
     localStorage.setItem('transit_app_theme', 'light');
     document.documentElement.classList.remove('dark-theme');
   } else {
-    map.removeLayer(maptilerStreets);
-    map.addLayer(maptilerDark);
+    showBaseLayer(maptilerDark, maptilerStreets);
     isDarkMap = true;
     window.isDarkMap = true;
     localStorage.setItem('transit_app_theme', 'dark');

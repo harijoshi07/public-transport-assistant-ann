@@ -3,7 +3,8 @@ from routeplot_app.api.views import (StationInfoListAV, StationInfoDetailAV,
                                      RouteInfoListAV, RouteInfoDetailAV,
                                      RouteStationInfoDetailAV,
                                      RouteStationInfoList1, RouteStationInfoList2, RouteStationInfoList3,
-                                     nearest_station_info, search_stations_autocomplete)
+                                     nearest_station_info, search_stations_autocomplete,
+                                     predict_eta)
 
  
 urlpatterns = [
@@ -20,7 +21,8 @@ urlpatterns = [
     path('get-routeid-stationid/<int:pk1>/<int:pk2>/', RouteStationInfoList3.as_view(), name='routeid-stationid'),
     path('get-routestationby-id/<int:pk>/', RouteStationInfoDetailAV.as_view(), name='routestation-detail'),
 
-    path('post-to-get-nearest-station/<str:userlocation>/<str:destlocation>/', nearest_station_info, name='nearest-station')
+    path('post-to-get-nearest-station/<str:userlocation>/<str:destlocation>/', nearest_station_info, name='nearest-station'),
+    path('predict-eta/', predict_eta, name='predict-eta'),
 
  
 ]

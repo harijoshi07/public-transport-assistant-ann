@@ -4,6 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script>
+      try {
+        if (localStorage.getItem('transit_app_theme') === 'dark') {
+          document.documentElement.classList.add('dark-theme');
+        }
+      } catch (e) {}
+    </script>
     <title>Public Transportation Assistance | Kathmandu Real-Time Transit</title>
     
     <!-- Google Fonts -->
@@ -26,7 +33,7 @@
     <script src="https://unpkg.com/graphhopper-js-api-client/dist/graphhopper-client.js"></script>
 
     <!-- Transit App Design System CSS -->
-    <link rel="stylesheet" href="{% static 'css/transit_app_theme.css' %}?v=3.5">
+    <link rel="stylesheet" href="{% static 'css/transit_app_theme.css' %}?v=4.3">
 </head>
 <body>
     {% block content %}

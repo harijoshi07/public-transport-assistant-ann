@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from routeplot_app.models import StationInfo, RouteInfo, RouteStationInfo
-from hardware_app.models import DeviceID, RealTimeUpdate, BackupGPSData
+from hardware_app.telemetry import ensure_device, record_fix
 
 
 def Get_Routes(request):
@@ -20,34 +20,62 @@ def Get_Routes(request):
     return render(request, 'home.html', {"routes_variable": routes_data})
 
 
+SHAPE_POINT_NAMES = {"route point", "o"}
+
+
+def _is_passenger_stop(station):
+    english = (getattr(station, "station_english_name", None) or "").strip()
+    nepali = (getattr(station, "station_nepali_name", None) or "").strip()
+    if not english or english.lower() in SHAPE_POINT_NAMES:
+        return False
+    if "रुट पोइन्ट" in nepali or "रुटपोइन्ट" in nepali.replace(" ", ""):
+        return False
+    return True
+
+
 def Get_Stations_on_Route(request, routenumber):
-    """Renders stations along a selected transit route in sequential order."""
+    """Renders passenger stops for a corridor, and the full shape for the map line."""
     route_obj = (
         RouteInfo.objects.filter(id=routenumber).first()
         or RouteInfo.objects.filter(route_id=routenumber).first()
     )
     if not route_obj:
-        return render(request, 'home2.html', {'stations_variable': []})
+        return render(request, 'home2.html', {'stations_variable': [], 'shape_variable': []})
 
     route_stations = RouteStationInfo.objects.filter(route_info=route_obj).order_by('station_order')
     station_fks = [rs.station_info_id for rs in route_stations]
     stations = StationInfo.objects.filter(id__in=station_fks)
     station_map = {s.id: s for s in stations}
 
-    stations_ordered = []
+    shape_points = []
+    display_stops = []
+    last_coord = None
+    last_stop_key = None
     for rs in route_stations:
-        s = station_map.get(rs.station_info_id)
-        if s:
-            stations_ordered.append({
-                'station_id': s.station_id,
-                'station_english_name': s.station_english_name,
-                'station_latitude': s.station_latitude,
-                'station_longitude': s.station_longitude,
-                'station_order': rs.station_order,
-            })
+        station = station_map.get(rs.station_info_id)
+        if not station or station.station_latitude is None or station.station_longitude is None:
+            continue
+        coord = (round(float(station.station_latitude), 6), round(float(station.station_longitude), 6))
+        if coord != last_coord:
+            shape_points.append({"lat": coord[0], "lng": coord[1]})
+            last_coord = coord
+        if not _is_passenger_stop(station):
+            continue
+        stop_key = (station.station_id, station.station_english_name)
+        if stop_key == last_stop_key:
+            continue
+        last_stop_key = stop_key
+        display_stops.append({
+            'station_id': station.station_id,
+            'station_english_name': station.station_english_name,
+            'station_latitude': coord[0],
+            'station_longitude': coord[1],
+            'station_order': len(display_stops) + 1,
+        })
 
     return render(request, 'home2.html', {
-        'stations_variable': stations_ordered,
+        'stations_variable': display_stops,
+        'shape_variable': shape_points,
         'current_route': route_obj
     })
 
@@ -57,21 +85,13 @@ def Post_GPS_Location(request, deviceid, latitude, longitude):
     try:
         lat = float(latitude)
         lng = float(longitude)
-        dev, _ = DeviceID.objects.get_or_create(device_id=deviceid, defaults={'device_name': f"Bus-{deviceid}"})
-
-        RealTimeUpdate.objects.create(
-            current_device_id=dev,
-            current_latitude=lat,
-            current_longitude=lng
-        )
-        BackupGPSData.objects.create(
-            backup_device_id=dev,
-            backup_latitude=lat,
-            backup_longitude=lng
-        )
+        dev = ensure_device(deviceid)
+        if dev is None:
+            return JsonResponse({'error': 'Valid device id is required'}, status=400)
+        record_fix(dev, lat, lng)
         return JsonResponse({
             'status': 'success',
-            'device_id': deviceid,
+            'device_id': dev.device_id,
             'current_latitude': lat,
             'current_longitude': lng
         })

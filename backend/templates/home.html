@@ -60,35 +60,46 @@
                 <button type="button" class="control-icon-btn" onclick="triggerSearch()" title="Refresh / Route">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
                 </button>
-                <button type="button" class="control-icon-btn" onclick="toggleMapTheme()" title="Toggle Dark/Light Map">
-                    <svg id="mapThemeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
-                    </svg>
-                </button>
             </div>
         </div>
 
-        <!-- 1. PLACES View (Shown when user is actively searching / typing) -->
-        <div id="placesView" style="display: none; flex: 1; overflow-y: auto; flex-direction: column;">
+        <nav class="transit-tabs" aria-label="Transit features">
+            <button type="button" class="transit-tab-btn active" id="tabPlan" onclick="switchTransitTab('plan')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                Plan Trip
+            </button>
+            <button type="button" class="transit-tab-btn" id="tabRoutes" onclick="switchTransitTab('routes')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg>
+                Lines
+            </button>
+            <button type="button" class="transit-tab-btn" id="tabSim" onclick="switchTransitTab('sim')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Radar
+            </button>
+            <button type="button" class="transit-tab-btn" id="tabAI" onclick="switchTransitTab('ai')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M2 12h20"></path></svg>
+                AI Model
+            </button>
+        </nav>
+
+        <div class="sidebar-stage">
+        <!-- 1. Plan Trip: search results + current itinerary card -->
+        <div id="viewPlan" class="sidebar-view active">
+        <div id="placesView">
             <div class="places-section-header">Places</div>
-            <div class="places-scroll-container" id="placesList">
-                <!-- Dynamically populated rows matching screenshot -->
-            </div>
+            <div class="places-scroll-container" id="placesList"></div>
         </div>
 
-        <!-- 2. Trip Result Itinerary View (Shown when a trip route is selected) -->
         {% if my_location_name and dest_location_name %}
-        <div id="itineraryView" style="display: block; flex: 1; overflow-y: auto;">
+        <div id="itineraryView">
             <div class="itinerary-drawer-content">
                 <div class="itinerary-hero-card">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <span style="font-size: 15px; font-weight: 800; color: #111827;">Direct Transit Option</span>
-                        <span style="background: #E8F5E9; color: #008A5B; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 999px;">
-                            Rs. {{ fare_npr }}
-                        </span>
+                    <div class="trip-head">
+                        <span class="trip-option-title">{{ trip_title }}</span>
+                        <div class="trip-time">
+                            <strong>{{ eta_min }}</strong>
+                            <span>min</span>
+                        </div>
                     </div>
 
                     <!-- Stepper -->
@@ -103,8 +114,14 @@
                     <div class="itinerary-step">
                         <div class="itinerary-node node-bus">🚌</div>
                         <div class="itinerary-step-body">
-                            <h4>Board Kathmandu Public Bus</h4>
-                            <p>Ride corridor via Ring Road · ~{{ trip_distance_km }} km</p>
+                            <h4>{% if uses_stored_route %}Board this stored line{% else %}No single stored line joins these stops{% endif %}</h4>
+                            <p>
+                                {% if uses_stored_route %}
+                                {{ ride_stops|length }} stops on the saved corridor · bus about {{ bus_eta_min }} min
+                                {% else %}
+                                Time is the network's estimate for {{ trip_distance_km }} km
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
 
@@ -116,48 +133,146 @@
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; text-align: center; background: #F1F5F9; padding: 10px; border-radius: 10px;">
+                    {% if ride_stops %}
+                    <ol class="ride-stops">
+                        {% for stop in ride_stops %}
+                        <li>{{ stop.name }}</li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+
+                    <div class="trip-stats">
                         <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: #64748B; font-weight: 700;">Distance</span>
-                            <div style="font-size: 14px; font-weight: 800; color: #0F172A;">{{ trip_distance_km }} km</div>
+                            <span class="trip-stat-label">Distance</span>
+                            <div class="trip-stat-value">{{ trip_distance_km }} km</div>
                         </div>
                         <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: #64748B; font-weight: 700;">Fare</span>
-                            <div style="font-size: 14px; font-weight: 800; color: #008A5B;">Rs. {{ fare_npr }}</div>
+                            <span class="trip-stat-label">ETA</span>
+                            <div class="trip-stat-value">{{ eta_min }} min</div>
+                        </div>
+                        <div>
+                            <span class="trip-stat-label">Fare</span>
+                            <div class="trip-stat-value trip-stat-fare">Rs. {{ fare_npr }}</div>
                         </div>
                     </div>
                 </div>
 
-                <button type="button" class="btn-go" onclick="resetSearch()" style="background: #111827; color: #FFF; margin-top: 0;">
+                <button type="button" class="btn-go btn-reset-trip" onclick="resetSearch()">
                     Plan Another Trip
                 </button>
             </div>
         </div>
+        {% else %}
+        <div id="planEmpty" class="plan-empty">
+            Choose a starting point and destination above, then leave now. Your trip card will show up here.
+        </div>
         {% endif %}
+        </div>
 
-        <!-- 3. Nearby Lines View (Default when not searching or routing) -->
-        <div id="nearbyLinesView" style="display: {% if my_location_name and dest_location_name %}none{% else %}block{% endif %}; flex: 1; overflow-y: auto;">
+        <!-- 2. Nearby Lines -->
+        <div id="viewRoutes" class="sidebar-view">
+            <input type="text" class="route-filter" id="filterRouteInput" placeholder="Filter corridors (Airport, Lagankhel...)" oninput="filterTransitRoutes()">
             <div class="places-section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Kathmandu Lines (116)</span>
+                <span>Kathmandu Lines</span>
                 <span style="color: var(--transit-green); font-size: 10px;">● Live Feed</span>
             </div>
-            
-            <div style="padding: 0 16px 16px;">
-                {% for route in routes_variable|slice:":25" %}
-                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/" class="place-item-row" style="text-decoration: none;">
-                    <div style="width: 38px; height: 32px; border-radius: 6px; background: {% cycle '#00B377' '#2563EB' '#7C3AED' '#EA580C' '#E11D48' '#059669' %}; color: #FFF; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-weight: 800; font-size: 13px; flex-shrink: 0;">
-                        {{ route.route_actual_id }}
-                    </div>
-                    <div class="place-text-col">
-                        <div class="place-primary-name">{{ route.route_end }}</div>
-                        <div class="place-secondary-address">From {{ route.route_start }}</div>
-                    </div>
-                    <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 800; color: var(--transit-green); flex-shrink: 0;">
-                        {% cycle '3m' '6m' '9m' '12m' '15m' %}
-                    </div>
+            <div class="line-list">
+                {% for route in routes_variable %}
+                <a href="/post_to_get_stationsname_for_particular_route/{{ route.route_id }}/" class="line-card transit-line-card" data-search="{{ route.route_name|default:''|lower }} {{ route.route_start|lower }} {{ route.route_end|lower }} {{ route.route_actual_id }}">
+                    <span class="line-badge" style="background: {% cycle '#00B377' '#2563EB' '#7C3AED' '#EA580C' '#E11D48' '#059669' %};">{{ route.route_actual_id }}</span>
+                    <span class="line-copy">
+                        <span class="line-title">{{ route.route_name }}</span>
+                        <span class="line-sub">{{ route.route_start }} → {{ route.route_end }}</span>
+                    </span>
                 </a>
+                {% empty %}
+                <p class="plan-empty">No routes available.</p>
                 {% endfor %}
             </div>
+        </div>
+
+        <!-- 3. Live Radar -->
+        <div id="viewSim" class="sidebar-view">
+            <div class="feature-panel">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 14px; font-weight: 800;">Live Telemetry Stream</span>
+                    <span id="simStatusPill" style="font-family: var(--font-mono); font-size: 10px; background: #E5E7EB; padding: 3px 8px; border-radius: 4px;">IDLE</span>
+                </div>
+                <div class="sim-telemetry-box">
+                    <div>Vehicle: <strong id="simVehicle">—</strong></div>
+                    <div>Corridor: <strong id="simCorridor">—</strong></div>
+                    <div>GPS fix: <span id="simCoords">—</span></div>
+                    <div>Speed: <span id="simSpeed">—</span></div>
+                    <div>Next stop: <span id="simNextStation">—</span></div>
+                    <div>To next stop: <span id="simEtaNext">—</span></div>
+                    <div>To end of line: <span id="simEtaEnd">—</span></div>
+                    <div>Last fix: <span id="simAge">—</span></div>
+                </div>
+                <button type="button" class="sim-btn-play" id="btnStartSim" onclick="toggleSimulation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Start live telemetry
+                </button>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">The bus runs on the trip you planned, using that line’s start pin, end pin, and colors. With no trip planned, it runs Kalanki to Koteshwor the same way. A fix older than 30 seconds is marked stale.</p>
+            </div>
+        </div>
+
+        <!-- 4. AI Model -->
+        <div id="viewAI" class="sidebar-view">
+            <div class="feature-panel">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 800;">Feedforward ANN (ETA)</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">IOE Thapathali · 2022–2023 GPS records</div>
+                    </div>
+                    <span id="annR2Badge" style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--transit-green-dark); background: #E8F8F2; padding: 4px 10px; border-radius: 999px;">ANN</span>
+                </div>
+                <div class="ai-slider-group">
+                    <div class="ai-slider-header">
+                        <span>Corridor distance</span>
+                        <strong id="valDistance">9.4 km</strong>
+                    </div>
+                    <input type="range" class="ai-slider" id="sliderDistance" min="1" max="25" step="0.5" value="9.4" oninput="runAiPrediction()">
+                </div>
+                <div class="ai-slider-group">
+                    <div class="ai-slider-header">
+                        <span>Average bus speed</span>
+                        <strong id="valSpeed">22 km/h</strong>
+                    </div>
+                    <input type="range" class="ai-slider" id="sliderSpeed" min="10" max="50" step="1" value="22" oninput="runAiPrediction()">
+                </div>
+                <div>
+                    <div class="ai-slider-header" style="margin-bottom: 8px;"><span>Traffic period</span></div>
+                    <div class="ai-traffic-toggle-row">
+                        <button type="button" class="ai-toggle-btn active" id="btnPeak" onclick="setTrafficMode('peak')">Peak hour (9:00)</button>
+                        <button type="button" class="ai-toggle-btn" id="btnNormal" onclick="setTrafficMode('normal')">Midday (13:00)</button>
+                    </div>
+                </div>
+                <div class="ai-prediction-display">
+                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Predicted transit time</span>
+                    <div class="ai-pred-time" id="aiPredMinutes">28.2 min</div>
+                    <div class="ai-comparison-row">
+                        <div>
+                            <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Linear heuristic</span>
+                            <strong style="display: block; font-size: 13px; font-family: var(--font-mono);" id="aiHeuristicMinutes">25.6 min</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Traffic delay</span>
+                            <strong style="display: block; font-size: 13px; font-family: var(--font-mono); color: #B45309;" id="aiDelayCaptured">+2.6 min</strong>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center;">
+                    <div class="metric-chip">
+                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">MAPE</span>
+                        <div id="aiMape" style="font-size: 14px; font-weight: 800; color: var(--transit-green); font-family: var(--font-mono);">—</div>
+                    </div>
+                    <div class="metric-chip">
+                        <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Test MAE</span>
+                        <div id="aiMae" style="font-size: 14px; font-weight: 800; font-family: var(--font-mono);">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
 
         <!-- Sidebar Footer Matching Screenshot -->
@@ -170,23 +285,22 @@
     <div class="map-canvas-wrapper">
         <div id="map"></div>
 
-        <!-- Floating Compass Button (matching bottom-right of screenshot) -->
-        <button type="button" class="map-compass-btn" onclick="resetMapCenter()" title="Recenter Map">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-            </svg>
-        </button>
-
-        <!-- Floating Phone Banner (matching bottom-right of screenshot) -->
-        <div class="map-bottom-banner" id="bottomBanner">
-            <div style="width: 24px; height: 24px; border-radius: 6px; background: #FFFFFF; display: flex; align-items: center; justify-content: center;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 18L12 6L18 18" stroke="#008A5B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div>
-                <div style="font-size: 11px; opacity: 0.9;">Want to plan trips on the go?</div>
-                <div style="font-size: 13px; font-weight: 800;">Get Transit on your phone</div>
-            </div>
-            <button type="button" onclick="document.getElementById('bottomBanner').style.display='none'">&times;</button>
+        <div class="map-floating-controls">
+            <button type="button" class="map-control-btn" onclick="resetMapCenter()" title="Compass">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                </svg>
+            </button>
+            <button type="button" class="map-control-btn" onclick="toggleMapTheme()" title="Toggle map theme" id="btnThemeToggle">
+                <svg id="mapThemeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <button type="button" class="map-control-btn" id="btnMyLocation" onclick="getUserLocation(true)" title="My location">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 8a4 4 0 1 0 .001 8.001A4 4 0 0 0 12 8zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/>
+                </svg>
+            </button>
         </div>
     </div>
 </div>
@@ -197,11 +311,14 @@
 {{ nearest_dest_station_lat_long|json_script:"nearestDestLoc" }}
 {{ dest_location_lat_long|json_script:"destLoc" }}
 {{ stations|json_script:"stationData" }}
+{{ trip_shape|json_script:"tripShape" }}
+{{ eta_min|json_script:"tripEta" }}
+{{ trip_brief|json_script:"tripBrief" }}
 
 <script src="{% static 'js/1_outputMenu.js' %}"></script>
-<script src="{% static 'js/2_loadmap.js' %}"></script>
-<script src="{% static 'js/3_myLocation.js' %}"></script>
-<script src="{% static 'js/4_routing.js' %}"></script>
+<script src="{% static 'js/2_loadmap.js' %}?v=2"></script>
+<script src="{% static 'js/3_myLocation.js' %}?v=4"></script>
+<script src="{% static 'js/4_routing.js' %}?v=5"></script>
 
 <script>
     let activeInputType = null;
@@ -256,23 +373,504 @@
         window.location.href = '/api/post-to-get-nearest-station/' + encodeURIComponent(o) + '/' + encodeURIComponent(d) + '/';
     }
 
+    const TAB_MAP = {
+        plan: { btn: 'tabPlan', view: 'viewPlan' },
+        routes: { btn: 'tabRoutes', view: 'viewRoutes' },
+        sim: { btn: 'tabSim', view: 'viewSim' },
+        ai: { btn: 'tabAI', view: 'viewAI' }
+    };
+
+    function switchTransitTab(tabId) {
+        Object.keys(TAB_MAP).forEach(function (key) {
+            const cfg = TAB_MAP[key];
+            const btn = document.getElementById(cfg.btn);
+            const view = document.getElementById(cfg.view);
+            const on = key === tabId;
+            if (btn) btn.classList.toggle('active', on);
+            if (view) view.classList.toggle('active', on);
+        });
+        if (tabId === 'ai') runAiPrediction();
+        if (tabId === 'sim') startLivePolling();
+        else stopLivePolling();
+    }
+
     function showPlacesView() {
-        document.getElementById('placesView').style.display = 'flex';
+        switchTransitTab('plan');
+        document.getElementById('placesView').classList.add('open');
         const itin = document.getElementById('itineraryView');
         if (itin) itin.style.display = 'none';
-        const lines = document.getElementById('nearbyLinesView');
-        if (lines) lines.style.display = 'none';
+        const empty = document.getElementById('planEmpty');
+        if (empty) empty.style.display = 'none';
     }
 
     function hidePlacesView() {
-        document.getElementById('placesView').style.display = 'none';
+        document.getElementById('placesView').classList.remove('open');
         const itin = document.getElementById('itineraryView');
-        if (itin) {
-            itin.style.display = 'block';
-        } else {
-            const lines = document.getElementById('nearbyLinesView');
-            if (lines) lines.style.display = 'block';
+        if (itin) itin.style.display = '';
+        const empty = document.getElementById('planEmpty');
+        if (empty) empty.style.display = '';
+    }
+
+    function filterTransitRoutes() {
+        const q = document.getElementById('filterRouteInput').value.toLowerCase();
+        document.querySelectorAll('.transit-line-card').forEach(function (card) {
+            const text = card.getAttribute('data-search') || '';
+            card.style.display = text.includes(q) ? 'flex' : 'none';
+        });
+    }
+
+    let trafficHour = 9;
+    let livePollTimer = null;
+    let livePublishTimer = null;
+    let liveReplayState = 'idle';
+    let livePublishIndex = 0;
+    let liveCorridor = null;
+    let livePollBusy = false;
+    let liveFitted = false;
+    let liveRouteLine = null;
+    let liveOriginMarker = null;
+    let liveDestMarker = null;
+    let liveTrail = null;
+    let liveReplayId = '';
+    let liveReplayQuery = '';
+    let liveUsingTrip = false;
+    let liveGlideKm = 0;
+    let liveGlideDir = 1;
+    let liveMotionFrame = null;
+    let liveLastFrame = 0;
+    let liveLastPost = 0;
+    let liveCum = null;
+    let liveCumKey = '';
+    const liveMarkers = {};
+
+    function setLivePill(text, kind) {
+        const pill = document.getElementById('simStatusPill');
+        if (!pill) return;
+        pill.textContent = text;
+        pill.classList.remove('is-live', 'is-stale', 'is-paused', 'is-idle');
+        if (kind) pill.classList.add(kind);
+    }
+
+    function startLivePolling() {
+        if (livePollTimer) return;
+        refreshLive();
+        livePollTimer = setInterval(refreshLive, 2000);
+    }
+
+    function stopLivePolling() {
+        if (!livePollTimer) return;
+        clearInterval(livePollTimer);
+        livePollTimer = null;
+    }
+
+    function readJsonScript(id) {
+        const el = document.getElementById(id);
+        if (!el || !el.textContent) return null;
+        const text = el.textContent.trim();
+        if (!text || text === 'null' || text === '""') return null;
+        try {
+            const data = JSON.parse(text);
+            return data && typeof data === 'object' ? data : null;
+        } catch (err) {
+            return null;
         }
+    }
+
+    function currentRideSpec() {
+        const brief = readJsonScript('tripBrief');
+        const stored = brief && Array.isArray(brief.shape) && brief.shape.length > 1 ? brief.shape : null;
+        const drawn = window.planRidePoints && window.planRidePoints.length > 1 ? window.planRidePoints : null;
+        const shape = stored || drawn;
+        if (!shape) return null;
+        if (!window.planTripSelected && !brief) return null;
+        return {
+            origin: (brief && brief.origin) || 'Start',
+            destination: (brief && brief.destination) || 'End',
+            route_pk: brief ? brief.route_pk : null,
+            shape: shape,
+            stops: (brief && brief.stops) || [],
+            title: (brief && brief.title) || ''
+        };
+    }
+
+    function ensureReplayTarget() {
+        if (!window.planTripSelected) {
+            liveReplayQuery = '';
+            liveUsingTrip = false;
+            return Promise.resolve();
+        }
+        const ride = currentRideSpec();
+        if (!ride) return Promise.resolve();
+        if (!liveReplayId) liveReplayId = 't' + Math.random().toString(36).slice(2, 10);
+        if (liveUsingTrip) return Promise.resolve();
+        return fetch('/api/live-replay/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                replay_id: liveReplayId,
+                origin: ride.origin,
+                destination: ride.destination,
+                route_pk: ride.route_pk,
+                shape: ride.shape,
+                stops: ride.stops
+            })
+        }).then(function (res) {
+            if (!res.ok) throw new Error('replay');
+            liveReplayQuery = '?replay=' + encodeURIComponent(liveReplayId);
+            liveUsingTrip = true;
+        });
+    }
+
+    function refreshLive() {
+        if (livePollBusy) return Promise.resolve();
+        livePollBusy = true;
+        const locateAtFetch = window.userLocateSeq || 0;
+        return ensureReplayTarget().then(function () {
+            return fetch('/api/post_realtime_gps_data/' + liveReplayQuery);
+        }).then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (window.planTripSelected && !liveUsingTrip) {
+                    fillLiveCard([], true);
+                    return;
+                }
+                liveCorridor = data.corridor || null;
+                drawLiveCorridor(liveCorridor, locateAtFetch);
+                drawLiveBuses(data.buses || []);
+                fillLiveCard(data.buses || [], true);
+            })
+            .catch(function () {
+                fillLiveCard([], false);
+            })
+            .finally(function () { livePollBusy = false; });
+    }
+
+    function ensureTrail() {
+        if (liveTrail || typeof L === 'undefined' || typeof map === 'undefined') return;
+        liveTrail = L.polyline([], {
+            color: '#00B377',
+            weight: 8,
+            opacity: 1,
+            lineCap: 'round',
+            lineJoin: 'round',
+            interactive: false
+        }).addTo(map);
+    }
+
+    function drawLiveCorridor(corridor, locateAtFetch) {
+        if (!corridor || !corridor.shape || corridor.shape.length < 2) return;
+        if (typeof L === 'undefined' || typeof map === 'undefined') return;
+        ensureTrail();
+        if (window.planTripSelected) return;
+        if (liveRouteLine) return;
+        const pin = window.transitPinIcon;
+        liveOriginMarker = L.marker(corridor.shape[0], {
+            icon: pin ? pin('#00B377') : undefined,
+            zIndexOffset: 500
+        }).addTo(map).bindPopup('<b>' + corridor.origin + '</b>');
+        liveDestMarker = L.marker(corridor.shape[corridor.shape.length - 1], {
+            icon: pin ? pin('#DC2626') : undefined,
+            zIndexOffset: 500
+        }).addTo(map).bindPopup('<b>' + corridor.destination + '</b>');
+        liveRouteLine = L.polyline(corridor.shape, {
+            color: '#00B377',
+            weight: 6,
+            opacity: 1,
+            lineCap: 'round',
+            lineJoin: 'round',
+            smoothFactor: 1.2,
+            interactive: false
+        }).addTo(map);
+        if (liveTrail) liveTrail.bringToFront();
+        if (!liveFitted) {
+            liveFitted = true;
+            if ((window.userLocateSeq || 0) === (locateAtFetch || 0)) {
+                map.fitBounds(corridor.shape, {
+                    paddingTopLeft: [420, 48],
+                    paddingBottomRight: [48, 48],
+                    maxZoom: 14
+                });
+            }
+        }
+    }
+
+    function busIcon() {
+        return L.divIcon({
+            html: '<div class="live-bus-marker-wrapper"><div class="live-bus-pulse-ring"></div><div class="live-bus-icon-circle">🚌</div></div>',
+            className: '',
+            iconSize: [44, 44],
+            iconAnchor: [22, 22]
+        });
+    }
+
+    function preferredBus(buses) {
+        for (let i = 0; i < buses.length; i++) {
+            if (buses[i].device_id === 1) return buses[i];
+        }
+        return buses.length ? buses[0] : null;
+    }
+
+    function drawLiveBuses(buses) {
+        if (typeof L === 'undefined' || typeof map === 'undefined') return;
+        const seen = {};
+        buses.forEach(function (bus) {
+            const pos = bus.on_corridor && bus.snapped_lat != null
+                ? [bus.snapped_lat, bus.snapped_lng]
+                : [bus.lat, bus.lng];
+            seen[bus.device_id] = true;
+            let marker = liveMarkers[bus.device_id];
+            const holdGlide = liveReplayState === 'running' && Number(bus.device_id) === 1;
+            if (!marker) {
+                marker = L.marker(pos, { icon: busIcon(), zIndexOffset: 700 }).addTo(map);
+                liveMarkers[bus.device_id] = marker;
+            } else if (!holdGlide) {
+                marker.setLatLng(pos);
+            }
+            marker.setOpacity(bus.stale ? 0.45 : 1);
+            const nextLabel = bus.next_stop || '—';
+            const etaLabel = bus.eta_next_min == null ? '—' : (bus.eta_next_min === 0 ? 'Arrived' : bus.eta_next_min + ' min');
+            marker.setPopupContent(
+                '<b>' + bus.name + '</b><br>Next: ' + nextLabel + '<br>ETA: ' + etaLabel
+            );
+        });
+        Object.keys(liveMarkers).forEach(function (id) {
+            if (!seen[id]) {
+                map.removeLayer(liveMarkers[id]);
+                delete liveMarkers[id];
+            }
+        });
+        const bus = preferredBus(buses);
+        if (liveTrail && liveReplayState !== 'running') {
+            liveTrail.setLatLngs(bus && bus.traveled && bus.traveled.length > 1 ? bus.traveled : []);
+        }
+    }
+
+    function fillLiveCard(buses, pollOk) {
+        const bus = preferredBus(buses);
+        const corridor = liveCorridor;
+        const ride = currentRideSpec();
+        if (window.planTripSelected && ride && ride.title) {
+            document.getElementById('simCorridor').textContent = ride.title;
+        } else if (corridor) {
+            document.getElementById('simCorridor').textContent = corridor.origin + ' → ' + corridor.destination;
+        }
+        if (!bus) {
+            document.getElementById('simVehicle').textContent = '—';
+            document.getElementById('simCoords').textContent = '—';
+            document.getElementById('simSpeed').textContent = '—';
+            document.getElementById('simNextStation').textContent = '—';
+            document.getElementById('simEtaNext').textContent = '—';
+            document.getElementById('simEtaEnd').textContent = '—';
+            document.getElementById('simAge').textContent = '—';
+        } else {
+            document.getElementById('simVehicle').textContent = bus.name;
+            if (liveReplayState !== 'running') {
+                const lat = bus.on_corridor && bus.snapped_lat != null ? bus.snapped_lat : bus.lat;
+                const lng = bus.on_corridor && bus.snapped_lng != null ? bus.snapped_lng : bus.lng;
+                document.getElementById('simCoords').textContent = Number(lat).toFixed(5) + ', ' + Number(lng).toFixed(5);
+            }
+            document.getElementById('simSpeed').textContent = bus.speed_kmh + ' km/h';
+            document.getElementById('simNextStation').textContent = bus.next_stop || '—';
+            document.getElementById('simEtaNext').textContent = bus.eta_next_min == null ? '—' : (bus.eta_next_min === 0 ? 'Arrived' : bus.eta_next_min + ' min');
+            document.getElementById('simEtaEnd').textContent = bus.eta_end_min == null ? '—' : (bus.eta_end_min === 0 ? 'Arrived' : bus.eta_end_min + ' min');
+            document.getElementById('simAge').textContent = bus.age_seconds + 's ago';
+        }
+        if (!pollOk) setLivePill('OFFLINE', 'is-paused');
+        else if (liveReplayState === 'running') setLivePill('TRANSMITTING', 'is-live');
+        else if (bus && !bus.stale) setLivePill('LIVE', 'is-live');
+        else if (liveReplayState === 'paused') setLivePill('PAUSED', 'is-paused');
+        else if (bus && bus.stale) setLivePill('STALE', 'is-stale');
+        else setLivePill('IDLE', 'is-idle');
+    }
+
+    function kmBetween(a, b) {
+        const lat = ((a[0] + b[0]) / 2) * Math.PI / 180;
+        const dy = (b[0] - a[0]) * 110.54;
+        const dx = (b[1] - a[1]) * 111.32 * Math.cos(lat);
+        return Math.hypot(dx, dy);
+    }
+
+    function metricsFor(shape) {
+        const key = shape.length + ':' + shape[0][0] + ':' + shape[shape.length - 1][1];
+        if (liveCum && liveCumKey === key) return liveCum;
+        const cum = [0];
+        for (let i = 1; i < shape.length; i++) cum.push(cum[i - 1] + kmBetween(shape[i - 1], shape[i]));
+        liveCum = cum;
+        liveCumKey = key;
+        return cum;
+    }
+
+    function pointAtKm(shape, cum, km) {
+        if (km <= 0) return [shape[0][0], shape[0][1]];
+        const last = cum.length - 1;
+        if (km >= cum[last]) return [shape[last][0], shape[last][1]];
+        for (let i = 1; i < cum.length; i++) {
+            if (km <= cum[i]) {
+                const span = cum[i] - cum[i - 1];
+                const t = span <= 1e-6 ? 0 : (km - cum[i - 1]) / span;
+                const a = shape[i - 1];
+                const b = shape[i];
+                return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+            }
+        }
+        return [shape[last][0], shape[last][1]];
+    }
+
+    function trailToKm(shape, cum, km) {
+        const pts = [];
+        for (let i = 0; i < shape.length; i++) {
+            if (cum[i] < km - 1e-4) pts.push(shape[i]);
+            else break;
+        }
+        pts.push(pointAtKm(shape, cum, km));
+        return pts;
+    }
+
+    function postGlideFix(pos) {
+        if (!liveCorridor) return;
+        if (window.planTripSelected && (!liveUsingTrip || liveCorridor.source !== 'trip')) return;
+        fetch('/api/post_realtime_gps_data/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                current_device_id: 1,
+                route_pk: liveCorridor.route_pk,
+                current_latitude: pos[0],
+                current_longitude: pos[1]
+            })
+        }).then(function () {
+            livePollBusy = false;
+            refreshLive();
+        }).catch(function () {});
+    }
+
+    function glideStep(now) {
+        if (liveReplayState !== 'running') {
+            liveMotionFrame = null;
+            return;
+        }
+        liveMotionFrame = requestAnimationFrame(glideStep);
+        const shape = liveCorridor && liveCorridor.shape;
+        if (!shape || shape.length < 2) return;
+        if (!liveLastFrame) {
+            liveLastFrame = now;
+            return;
+        }
+        const dt = Math.min(0.05, (now - liveLastFrame) / 1000);
+        liveLastFrame = now;
+        const cum = metricsFor(shape);
+        const total = cum[cum.length - 1];
+        if (total <= 0) return;
+        const duration = Math.min(48, Math.max(18, total * 3.4));
+        liveGlideKm += liveGlideDir * (total / duration) * dt;
+        if (liveGlideKm >= total) {
+            liveGlideKm = total;
+            liveGlideDir = -1;
+        } else if (liveGlideKm <= 0) {
+            liveGlideKm = 0;
+            liveGlideDir = 1;
+        }
+        const pos = pointAtKm(shape, cum, liveGlideKm);
+        ensureTrail();
+        let marker = liveMarkers[1];
+        if (!marker) {
+            marker = L.marker(pos, { icon: busIcon(), zIndexOffset: 700 }).addTo(map);
+            liveMarkers[1] = marker;
+        } else {
+            marker.setLatLng(pos);
+            marker.setOpacity(1);
+        }
+        if (liveTrail) liveTrail.setLatLngs(trailToKm(shape, cum, liveGlideKm));
+        const coords = document.getElementById('simCoords');
+        if (coords) coords.textContent = pos[0].toFixed(5) + ', ' + pos[1].toFixed(5);
+        if (now - liveLastPost > 2000) {
+            liveLastPost = now;
+            postGlideFix(pos);
+        }
+    }
+
+    function startGlide() {
+        if (liveMotionFrame) return;
+        liveLastFrame = 0;
+        liveMotionFrame = requestAnimationFrame(glideStep);
+    }
+
+    function stopGlide() {
+        if (liveMotionFrame) cancelAnimationFrame(liveMotionFrame);
+        liveMotionFrame = null;
+        liveLastFrame = 0;
+    }
+
+    function toggleSimulation() {
+        const btn = document.getElementById('btnStartSim');
+        if (liveReplayState === 'running') {
+            stopGlide();
+            liveReplayState = 'paused';
+            btn.textContent = 'Resume live telemetry';
+            btn.classList.remove('sim-btn-pause');
+            refreshLive();
+            return;
+        }
+        if (liveReplayState === 'idle') {
+            liveGlideKm = 0;
+            liveGlideDir = 1;
+        }
+        liveReplayState = 'running';
+        btn.textContent = 'Pause telemetry';
+        btn.classList.add('sim-btn-pause');
+        setLivePill('TRANSMITTING', 'is-live');
+        startLivePolling();
+        const begin = function () {
+            startGlide();
+        };
+        livePollBusy = false;
+        refreshLive().then(function () {
+            if (liveReplayState === 'running') begin();
+        }).catch(function () { setLivePill('OFFLINE', 'is-paused'); });
+    }
+
+    function setTrafficMode(mode) {
+        trafficHour = mode === 'peak' ? 9 : 13;
+        document.getElementById('btnPeak').classList.toggle('active', mode === 'peak');
+        document.getElementById('btnNormal').classList.toggle('active', mode !== 'peak');
+        runAiPrediction();
+    }
+
+    function runAiPrediction() {
+        const distSlider = document.getElementById('sliderDistance');
+        const speedSlider = document.getElementById('sliderSpeed');
+        if (!distSlider || !speedSlider) return;
+        const distance = parseFloat(distSlider.value);
+        const speed = parseFloat(speedSlider.value);
+        document.getElementById('valDistance').textContent = distance.toFixed(1) + ' km';
+        document.getElementById('valSpeed').textContent = speed.toFixed(0) + ' km/h';
+        const linearMinutes = (distance / speed) * 60;
+        const url = '/api/predict-eta/?distance_km=' + encodeURIComponent(distance)
+            + '&speed_kmh=' + encodeURIComponent(speed)
+            + '&hour=' + encodeURIComponent(trafficHour);
+        fetch(url)
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                const annMinutes = Number(data.eta_min);
+                const delayCaptured = annMinutes - linearMinutes;
+                document.getElementById('aiPredMinutes').textContent = annMinutes.toFixed(1) + ' min';
+                document.getElementById('aiHeuristicMinutes').textContent = linearMinutes.toFixed(1) + ' min';
+                document.getElementById('aiDelayCaptured').textContent = (delayCaptured >= 0 ? '+' : '') + delayCaptured.toFixed(1) + ' min';
+                const badge = document.getElementById('annR2Badge');
+                if (badge && data.metrics && data.metrics.r2 != null) {
+                    badge.textContent = 'R² ' + Number(data.metrics.r2).toFixed(3);
+                }
+                if (data.metrics) {
+                    if (data.metrics.mape != null) {
+                        document.getElementById('aiMape').textContent = Number(data.metrics.mape).toFixed(1) + '%';
+                    }
+                    if (data.metrics.mae_min != null) {
+                        document.getElementById('aiMae').textContent = Number(data.metrics.mae_min).toFixed(2) + ' min';
+                    }
+                }
+            })
+            .catch(function () {
+                document.getElementById('aiPredMinutes').textContent = linearMinutes.toFixed(1) + ' min';
+            });
     }
 
     async function fetchPlaces(query) {
