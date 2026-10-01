@@ -417,22 +417,10 @@
         }
     }
 
-    // ── Autocomplete Dropdown Controller (Google Maps / Uber style) ──
+    // ── Autocomplete Dropdown Controller (suggests strictly as user types) ──
     let activeSearchField = null;
     let activeItemIndex = -1;
     let debounceTimer = null;
-
-    const POPULAR_HUBS = [
-        { name: "Kalanki", sub: "Major Western Transit Hub · Ring Road" },
-        { name: "Ratnapark", sub: "Central Bus Park · Kathmandu Downtown" },
-        { name: "Tribhuvan International Airport", sub: "Ring Road & Aviation Terminal" },
-        { name: "Thapathali Campus", sub: "IOE Campus Hub · Bagmati Bridge" },
-        { name: "Koteshwor", sub: "Major Eastern Transit Gateway" },
-        { name: "Lagankhel", sub: "Patan / Lalitpur Bus Terminal" },
-        { name: "Budhanilkantha", sub: "Northern Corridor Terminal" },
-        { name: "Swayambhu", sub: "Ring Road Western Landmark" },
-        { name: "New Road", sub: "Central Commercial Hub" }
-    ];
 
     function showDropdown(type) {
         activeSearchField = type;
@@ -440,11 +428,12 @@
         const input = (type === 'origin') ? document.getElementById('inputOrigin') : document.getElementById('inputDest');
         const val = input.value.trim();
 
-        if (val.length < 2) {
-            renderDropdown(POPULAR_HUBS, "Suggested Kathmandu Hubs");
-        } else {
-            fetchSuggestions(val);
+        // No suggestions before typing: require at least 1 character
+        if (val.length < 1) {
+            closeDropdown();
+            return;
         }
+        fetchSuggestions(val);
     }
 
     async function fetchSuggestions(query) {
@@ -461,12 +450,7 @@
                 }));
                 renderDropdown(items, 'Matching Bus Stops (' + items.length + ')');
             } else {
-                const localFiltered = POPULAR_HUBS.filter(h => h.name.toLowerCase().includes(query.toLowerCase()));
-                if (localFiltered.length > 0) {
-                    renderDropdown(localFiltered, "Suggested Hubs");
-                } else {
-                    renderDropdown([{ name: query, sub: "Search as custom location" }], "Location");
-                }
+                renderDropdown([{ name: query, sub: 'Search landmark or address in Kathmandu' }], 'Custom Location');
             }
         } catch (err) {
             console.warn('Autocomplete fetch failed:', err);
@@ -530,15 +514,24 @@
         [ { el: oInput, type: 'origin' }, { el: dInput, type: 'dest' } ].forEach(({ el, type }) => {
             if (!el) return;
 
+            // Only show dropdown on focus if user has already typed something
             el.addEventListener('focus', function () {
-                showDropdown(type);
+                if (el.value.trim().length >= 1) {
+                    showDropdown(type);
+                } else {
+                    closeDropdown();
+                }
             });
 
             el.addEventListener('input', function () {
                 clearTimeout(debounceTimer);
+                if (el.value.trim().length < 1) {
+                    closeDropdown();
+                    return;
+                }
                 debounceTimer = setTimeout(() => {
                     showDropdown(type);
-                }, 140);
+                }, 120);
             });
 
             el.addEventListener('keydown', function (e) {

@@ -41,33 +41,52 @@ def search_stations_autocomplete(request):
     return JsonResponse({'results': results})
 
 
+def _resolve_location_point(location_str, geolocator):
+    """
+    Resolves coordinates by checking local StationInfo database of 6,582 Kathmandu stops first.
+    Falls back to external Nominatim geocoder for general landmarks.
+    """
+    clean = location_str.strip().replace(",", " ")
+    if not clean:
+        return None
+
+    # 1. Local Database lookup (instant & 100% accurate for all bus stops)
+    station = (
+        StationInfo.objects.filter(station_english_name__iexact=clean).first()
+        or StationInfo.objects.filter(station_english_name__icontains=clean).first()
+    )
+    if station:
+        return (station.station_latitude, station.station_longitude, station.station_english_name)
+
+    # 2. Check if input is a literal coordinate pair (lat, lng)
+    if ',' in location_str or ';' in location_str:
+        try:
+            parts = location_str.replace(';', ',').split(',')
+            return (float(parts[0].strip()), float(parts[1].strip()), location_str)
+        except Exception:
+            pass
+
+    # 3. External Nominatim Geocoder for general landmarks (e.g. Civil Hospital, Baluwatar)
+    try:
+        loc = (
+            geolocator.geocode(f"{clean}, Kathmandu, Nepal", timeout=5)
+            or geolocator.geocode(f"{clean}, Nepal", timeout=5)
+            or geolocator.geocode(clean, timeout=5)
+        )
+        if loc:
+            return (loc.latitude, loc.longitude, clean)
+    except Exception:
+        pass
+
+    return None
+
+
 def nearest_station_info(request, userlocation, destlocation):
     """Geocodes origin and destination, identifies nearest transit stops, and computes fares."""
     geolocator = Nominatim(user_agent="PublicTransportAssistant/1.0")
-    
-    user_clean = userlocation.strip().replace(",", " ")
-    dest_clean = destlocation.strip().replace(",", " ")
 
-    userloc = None
-    destloc = None
-
-    try:
-        userloc = geolocator.geocode(f"{user_clean}, Kathmandu, Nepal", timeout=6)
-        if not userloc:
-            userloc = geolocator.geocode(f"{user_clean}, Nepal", timeout=6)
-        if not userloc:
-            userloc = geolocator.geocode(user_clean, timeout=6)
-    except Exception:
-        userloc = None
-
-    try:
-        destloc = geolocator.geocode(f"{dest_clean}, Kathmandu, Nepal", timeout=6)
-        if not destloc:
-            destloc = geolocator.geocode(f"{dest_clean}, Nepal", timeout=6)
-        if not destloc:
-            destloc = geolocator.geocode(dest_clean, timeout=6)
-    except Exception:
-        destloc = None
+    user_point = _resolve_location_point(userlocation, geolocator)
+    dest_point = _resolve_location_point(destlocation, geolocator)
 
     # Retrieve all routes so the sidebar remains populated
     routes = RouteInfo.objects.all()
@@ -82,20 +101,20 @@ def nearest_station_info(request, userlocation, destlocation):
         for item in routes
     ]
 
-    if not userloc:
+    if not user_point:
         return render(request, 'home.html', {
-            'error': f'Could not find coordinates for origin "{userlocation}". Please enter a recognized landmark (e.g. Kalanki, Thapathali, Ratnapark).',
+            'error': f'Could not find coordinates for origin "{userlocation}". Please enter a recognized landmark or transit stop.',
             'routes_variable': routes_data,
         })
 
-    if not destloc:
+    if not dest_point:
         return render(request, 'home.html', {
-            'error': f'Could not find coordinates for destination "{destlocation}". Please enter a recognized landmark (e.g. Koteshwor, Airport, Lagankhel).',
+            'error': f'Could not find coordinates for destination "{destlocation}". Please enter a recognized landmark or transit stop.',
             'routes_variable': routes_data,
         })
 
-    user_location = (userloc.latitude, userloc.longitude)
-    dest_location = (destloc.latitude, destloc.longitude)
+    user_location = (user_point[0], user_point[1])
+    dest_location = (dest_point[0], dest_point[1])
         
     all_stations = list(StationInfo.objects.exclude(station_english_name='Route Point'))
     if not all_stations:
@@ -121,7 +140,7 @@ def nearest_station_info(request, userlocation, destlocation):
         fare_npr = 20 + int(math.ceil(extra_km / 5.0)) * 5
 
     response_data = {
-        'my_location_name': userlocation,
+        'my_location_name': user_point[2] if len(user_point) > 2 else userlocation,
         'my_location_lat_long': [user_location[0], user_location[1]],
 
         'nearest_user_station_id': nearest_user_station.station_id,
@@ -132,7 +151,7 @@ def nearest_station_info(request, userlocation, destlocation):
         'nearest_dest_station_english_name': nearest_dest_station.station_english_name,
         'nearest_dest_station_lat_long': nearest_dest_station_loc,
 
-        'dest_location_name': destlocation,
+        'dest_location_name': dest_point[2] if len(dest_point) > 2 else destlocation,
         'dest_location_lat_long': [dest_location[0], dest_location[1]],
 
         'trip_distance_km': trip_distance_km,
