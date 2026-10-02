@@ -86,16 +86,17 @@ def main():
 
     data_path = os.path.join(os.path.dirname(__file__), "..", "data", "average_travel_time_negative_dir.csv")
     
-    if os.path.exists(data_path) and os.path.getsize(data_path) > 1000:
-        print(f"[*] Loading transit training dataset from: {data_path}")
-        df = pd.read_csv(data_path)
-        # Select numeric feature columns
-        numeric_cols = df.select_dtypes(include=[np.number]).columns
-        X = df[numeric_cols[:-1]].values
-        y = df[numeric_cols[-1]].values
-    else:
-        print("[*] Generating synthetic transit dataset matching Kathmandu corridor profile...")
-        X, y = generate_synthetic_features(n_samples=5000)
+    if not (os.path.exists(data_path) and os.path.getsize(data_path) > 1000):
+        raise FileNotFoundError(
+            f"Training data not found at {data_path}. "
+            "generate_synthetic_features() is for smoke tests only and is not used for any reported score."
+        )
+    print(f"[*] Loading transit training dataset from: {data_path}")
+    df = pd.read_csv(data_path)
+    # Select numeric feature columns
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    X = df[numeric_cols[:-1]].values
+    y = df[numeric_cols[-1]].values
 
     # Feature scaling (Min-Max normalization)
     scaler_X = MinMaxScaler()
